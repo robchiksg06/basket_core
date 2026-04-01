@@ -79,16 +79,16 @@
 
 @if($canManageGame)
     <div class="bg-white rounded shadow p-6 mb-6">
-        <h2 class="text-2xl font-bold mb-4">Pievienot metienu</h2>
+        <h2 class="text-2xl font-bold mb-4">Pievienot notikumu</h2>
 
         <form action="{{ route('games.events.store', $game) }}" method="POST" class="shot-form space-y-4">
             @csrf
 
             <input type="hidden" name="court_x" class="court-x-input">
             <input type="hidden" name="court_y" class="court-y-input">
-            <input type="hidden" name="shot_type" class="shot-type-input" required>
+            <input type="hidden" name="shot_type" class="shot-type-input">
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                     <label class="block font-semibold mb-1">Spēlētājs</label>
                     <select name="game_player_id" class="w-full border rounded px-3 py-2" required>
@@ -123,6 +123,26 @@
                 </div>
 
                 <div>
+                    <label class="block font-semibold mb-1">Notikuma tips</label>
+                    <select name="event_type" class="w-full border rounded px-3 py-2 event-type-select" required>
+                        <option value="shot">Metiens</option>
+                        <option value="rebound">Atlēkusī bumba</option>
+                        <option value="assist">Assist</option>
+                        <option value="steal">Steal</option>
+                        <option value="turnover">Turnover</option>
+                    </select>
+                </div>
+
+                <div class="event-subtype-wrap hidden">
+                    <label class="block font-semibold mb-1">Atlēkušās bumbas tips</label>
+                    <select name="event_subtype" class="w-full border rounded px-3 py-2 event-subtype-select">
+                        <option value="">Nav</option>
+                        <option value="offensive">Uzbrukumā</option>
+                        <option value="defensive">Aizsardzībā</option>
+                    </select>
+                </div>
+
+                <div class="shot-type-wrap md:col-span-1">
                     <label class="block font-semibold mb-1">Metiena tips</label>
                     <div class="w-full border rounded px-3 py-2 bg-gray-50 text-gray-700 shot-type-label">
                         Nav izvēlēts
@@ -130,48 +150,78 @@
                 </div>
             </div>
 
-            <div class="max-w-[600px] mx-auto">
-                    <div
-            class="court-picker relative w-full cursor-crosshair rounded-xl overflow-hidden border shadow"
-            style="aspect-ratio: 2 / 1;"
-        >
-            <img
-                src="{{ asset('images/court.png') }}"
-                class="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
-                alt="Basketbola laukums"
-            >
+            <div class="max-w-[600px] mx-auto shot-only-wrap">
+                <div
+                    class="court-picker relative w-full cursor-crosshair rounded-xl overflow-hidden border shadow"
+                    style="aspect-ratio: 2 / 1;"
+                >
+                    <img
+                        src="{{ asset('images/court.png') }}"
+                        class="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+                        alt="Basketbola laukums"
+                    >
 
+                    <div class="shot-marker hidden absolute w-4 h-4 rounded-full bg-blue-600 border-2 border-white shadow-md -translate-x-1/2 -translate-y-1/2"></div>
+                </div>
 
-
-            <div class="shot-marker hidden absolute w-4 h-4 rounded-full bg-blue-600 border-2 border-white shadow-md -translate-x-1/2 -translate-y-1/2"></div>
-        </div>
                 <div class="text-sm text-gray-700 text-center mt-4">
                     Uzspied uz laukuma, lai atzīmētu metiena vietu
                 </div>
-               
-                <div class="grid grid-cols-2 gap-4 mt-4">
-                    <button type="submit" name="is_made" value="1"
-                        class="bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-3 font-semibold shadow-sm">
-                        Iemeta
-                    </button>
 
-                    <button type="submit" name="is_made" value="0"
-                        class="bg-red-600 hover:bg-red-700 text-white rounded-xl px-4 py-3 font-semibold shadow-sm">
-                        Garām
-                    </button>
+                <div class="shot-buttons-wrap">
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <button
+                            type="submit"
+                            name="is_made"
+                            value="1"
+                            class="bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-3 font-semibold shadow-sm"
+                        >
+                            Iemeta
+                        </button>
+
+                        <button
+                            type="submit"
+                            name="is_made"
+                            value="0"
+                            class="bg-red-600 hover:bg-red-700 text-white rounded-xl px-4 py-3 font-semibold shadow-sm"
+                        >
+                            Garām
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mt-3">
+                        <button
+                            type="submit"
+                            name="ft_result"
+                            value="1"
+                            class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-3 font-semibold shadow-sm"
+                        >
+                            FT iemeta
+                        </button>
+
+                        <button
+                            type="submit"
+                            name="ft_result"
+                            value="0"
+                            class="bg-gray-700 hover:bg-gray-800 text-white rounded-xl px-4 py-3 font-semibold shadow-sm"
+                        >
+                            FT garām
+                        </button>
+                    </div>
                 </div>
+            </div>
 
-                <div class="grid grid-cols-2 gap-4 mt-3">
-                    <button type="submit" name="ft_result" value="1"
-                        class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-3 font-semibold shadow-sm">
-                        FT iemeta
-                    </button>
+            <div class="non-shot-help hidden text-sm text-gray-600 text-center">
+                Šim notikumam nav jāatzīmē vieta uz laukuma.
+            </div>
 
-                    <button type="submit" name="ft_result" value="0"
-                        class="bg-gray-700 hover:bg-gray-800 text-white rounded-xl px-4 py-3 font-semibold shadow-sm">
-                        FT garām
-                    </button>
-                </div>
+            <div class="non-shot-buttons-wrap hidden mt-4 max-w-[600px] mx-auto">
+                <button
+                    type="submit"
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 py-3 font-semibold shadow-sm"
+                >
+                    Pievienot notikumu
+                </button>
             </div>
         </form>
     </div>
@@ -312,14 +362,40 @@
                 <th class="border px-3 py-2">Q</th>
                 <th class="border px-3 py-2">Komanda</th>
                 <th class="border px-3 py-2">Spēlētājs</th>
-                <th class="border px-3 py-2">Metiens</th>
-                <th class="border px-3 py-2">Rezultāts</th>
+                <th class="border px-3 py-2">Notikums</th>
+                <th class="border px-3 py-2">Rezultāts / Tips</th>
                 <th class="border px-3 py-2">Vieta</th>
                 <th class="border px-3 py-2"></th>
             </tr>
         </thead>
         <tbody>
             @forelse($game->events->sortByDesc('id') as $event)
+                @php
+                    $eventType = $event->event_type ?? 'shot';
+
+                    $eventLabel = match($eventType) {
+                        'shot' => strtoupper($event->shot_type ?? '-'),
+                        'rebound' => 'Atlēkusī bumba',
+                        'assist' => 'Assist',
+                        'steal' => 'Steal',
+                        'turnover' => 'Turnover',
+                        default => ucfirst($eventType),
+                    };
+
+                    $eventMeta = match($eventType) {
+                        'shot' => $event->is_made ? 'Sekmīgs' : 'Nesekmīgs',
+                        'rebound' => match($event->event_subtype) {
+                            'offensive' => 'Uzbrukumā',
+                            'defensive' => 'Aizsardzībā',
+                            default => 'Bez tipa',
+                        },
+                        'assist' => 'Piespēle',
+                        'steal' => 'Pārķerta bumba',
+                        'turnover' => 'Kļūda',
+                        default => '-',
+                    };
+                @endphp
+
                 <tr>
                     <td class="border px-3 py-2">{{ $event->created_at->format('H:i:s') }}</td>
                     <td class="border px-3 py-2">{{ $event->quarter }}</td>
@@ -327,12 +403,10 @@
                         {{ $event->team_side === 'home' ? $game->home_team_name : $game->away_team_name }}
                     </td>
                     <td class="border px-3 py-2">
-                        #{{ $event->player->jersey_number }} {{ $event->player->player_name }}
+                        #{{ $event->player?->jersey_number }} {{ $event->player?->player_name ?? 'Nezināms' }}
                     </td>
-                    <td class="border px-3 py-2">{{ strtoupper($event->shot_type) }}</td>
-                    <td class="border px-3 py-2">
-                        {{ $event->is_made ? 'Sekmīgs' : 'Nesekmīgs' }}
-                    </td>
+                    <td class="border px-3 py-2">{{ $eventLabel }}</td>
+                    <td class="border px-3 py-2">{{ $eventMeta }}</td>
                     <td class="border px-3 py-2">
                         @if(!is_null($event->court_x) && !is_null($event->court_y))
                             {{ $event->court_x }}, {{ $event->court_y }}
@@ -391,6 +465,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const yInput = form.querySelector('.court-y-input');
         const shotTypeInput = form.querySelector('.shot-type-input');
         const shotTypeLabel = form.querySelector('.shot-type-label');
+        const eventTypeSelect = form.querySelector('.event-type-select');
+        const eventSubtypeWrap = form.querySelector('.event-subtype-wrap');
+        const eventSubtypeSelect = form.querySelector('.event-subtype-select');
+        const shotOnlyWrap = form.querySelector('.shot-only-wrap');
+        const shotTypeWrap = form.querySelector('.shot-type-wrap');
+        const shotButtonsWrap = form.querySelector('.shot-buttons-wrap');
+        const nonShotButtonsWrap = form.querySelector('.non-shot-buttons-wrap');
+        const nonShotHelp = form.querySelector('.non-shot-help');
 
         if (!court || !marker || !xInput || !yInput || !shotTypeInput || !shotTypeLabel) return;
 
@@ -426,6 +508,54 @@ document.addEventListener('DOMContentLoaded', function () {
                 shotTypeLabel.textContent = 'Nav izvēlēts';
             }
         }
+
+                function toggleEventUI() {
+            const eventType = eventTypeSelect?.value || 'shot';
+            const isShot = eventType === 'shot';
+            const isRebound = eventType === 'rebound';
+
+            if (shotOnlyWrap) {
+                shotOnlyWrap.classList.toggle('hidden', !isShot);
+            }
+
+            if (shotTypeWrap) {
+                shotTypeWrap.classList.toggle('hidden', !isShot);
+            }
+
+            if (shotButtonsWrap) {
+                shotButtonsWrap.classList.toggle('hidden', !isShot);
+            }
+
+            if (nonShotButtonsWrap) {
+                nonShotButtonsWrap.classList.toggle('hidden', isShot);
+            }
+
+            if (nonShotHelp) {
+                nonShotHelp.classList.toggle('hidden', isShot);
+            }
+
+            if (eventSubtypeWrap) {
+                eventSubtypeWrap.classList.toggle('hidden', !isRebound);
+            }
+
+            if (!isRebound && eventSubtypeSelect) {
+                eventSubtypeSelect.value = '';
+            }
+
+            if (!isShot) {
+                xInput.value = '';
+                yInput.value = '';
+                shotTypeInput.value = '';
+                marker.classList.add('hidden');
+                shotTypeLabel.textContent = 'Nav izvēlēts';
+            }
+        }
+
+        if (eventTypeSelect) {
+            eventTypeSelect.addEventListener('change', toggleEventUI);
+        }
+
+        toggleEventUI();
 
         court.addEventListener('click', function (event) {
             const rect = court.getBoundingClientRect();
@@ -470,13 +600,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         form.addEventListener('submit', function (event) {
             const submitter = event.submitter;
+            const currentEventType = eventTypeSelect?.value || 'shot';
 
             if (!submitter) return;
 
             const isFtButton = submitter.name === 'ft_result';
             const isRegularShotButton = submitter.name === 'is_made';
 
-            if (isRegularShotButton) {
+            if (currentEventType === 'shot' && isRegularShotButton) {
                 if (!xInput.value || !yInput.value) {
                     event.preventDefault();
                     alert('Lūdzu, uzspied uz laukuma, lai atzīmētu metiena vietu.');
@@ -490,6 +621,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     );
                     setShotType(detectedType);
                 }
+
+                const ftHidden = form.querySelector('.ft-hidden-is-made');
+                if (ftHidden) {
+                    ftHidden.remove();
+                }
+            }
+
+            if (currentEventType !== 'shot') {
+                xInput.value = '';
+                yInput.value = '';
+                shotTypeInput.value = '';
 
                 const ftHidden = form.querySelector('.ft-hidden-is-made');
                 if (ftHidden) {

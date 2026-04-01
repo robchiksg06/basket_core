@@ -20,45 +20,48 @@ class GamePlayer extends Model
 
     public function events()
     {
-        return $this->hasMany(GameEvent::class);
-    }
-
-    public function getPointsAttribute(): int
-    {
-        return $this->events->sum(function ($event) {
-            if (!$event->is_made) {
-                return 0;
-            }
-
-            return match ($event->shot_type) {
-                'ft' => 1,
-                '2pt' => 2,
-                '3pt' => 3,
-            };
-        });
+        return $this->hasMany(GameEvent::class, 'game_player_id');
     }
 
     public function statLine(): array
     {
         $events = $this->events;
 
-        $ftMade = $events->where('shot_type', 'ft')->where('is_made', true)->count();
-        $ftAtt = $events->where('shot_type', 'ft')->count();
+        $ftMade = $events->where('event_type', 'shot')->where('shot_type', 'ft')->where('is_made', true)->count();
+        $ftAtt = $events->where('event_type', 'shot')->where('shot_type', 'ft')->count();
 
-        $twoMade = $events->where('shot_type', '2pt')->where('is_made', true)->count();
-        $twoAtt = $events->where('shot_type', '2pt')->count();
+        $twoMade = $events->where('event_type', 'shot')->where('shot_type', '2pt')->where('is_made', true)->count();
+        $twoAtt = $events->where('event_type', 'shot')->where('shot_type', '2pt')->count();
 
-        $threeMade = $events->where('shot_type', '3pt')->where('is_made', true)->count();
-        $threeAtt = $events->where('shot_type', '3pt')->count();
+        $threeMade = $events->where('event_type', 'shot')->where('shot_type', '3pt')->where('is_made', true)->count();
+        $threeAtt = $events->where('event_type', 'shot')->where('shot_type', '3pt')->count();
+
+        $offRebounds = $events->where('event_type', 'rebound')->where('event_subtype', 'offensive')->count();
+        $defRebounds = $events->where('event_type', 'rebound')->where('event_subtype', 'defensive')->count();
+
+        $assists = $events->where('event_type', 'assist')->count();
+        $steals = $events->where('event_type', 'steal')->count();
+        $turnovers = $events->where('event_type', 'turnover')->count();
 
         return [
-            'points' => $this->points,
+            'points' => ($ftMade * 1) + ($twoMade * 2) + ($threeMade * 3),
+
             'ft_made' => $ftMade,
             'ft_att' => $ftAtt,
+
             '2pt_made' => $twoMade,
             '2pt_att' => $twoAtt,
+
             '3pt_made' => $threeMade,
             '3pt_att' => $threeAtt,
+
+            'rebounds' => $offRebounds + $defRebounds,
+            'off_rebounds' => $offRebounds,
+            'def_rebounds' => $defRebounds,
+
+            'assists' => $assists,
+            'steals' => $steals,
+            'turnovers' => $turnovers,
         ];
     }
 }

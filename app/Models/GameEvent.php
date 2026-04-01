@@ -11,6 +11,8 @@ class GameEvent extends Model
         'game_player_id',
         'team_side',
         'quarter',
+        'event_type',
+        'event_subtype',
         'shot_type',
         'is_made',
         'court_x',

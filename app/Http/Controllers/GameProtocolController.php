@@ -104,30 +104,59 @@ class GameProtocolController extends Controller
     {
         $this->checkGameOwnerOrAdmin($game);
 
-        $validated = $request->validate([
+        $player = GamePlayer::where('game_id', $game->id)
+            ->findOrFail($request->game_player_id);
+
+        $eventType = $request->input('event_type', 'shot');
+
+        $baseRules = [
             'game_player_id' => ['required', 'exists:game_players,id'],
             'quarter' => ['required', 'integer', 'min:1', 'max:4'],
-            'shot_type' => ['required', 'in:ft,2pt,3pt'],
-            'is_made' => ['required', 'in:0,1'],
-            'court_x' => ['nullable', 'numeric'],
-            'court_y' => ['nullable', 'numeric'],
-        ]);
+            'event_type' => ['required', 'in:shot,rebound,assist,steal,turnover'],
+            'event_subtype' => ['nullable', 'in:offensive,defensive'],
+            'shot_type' => ['nullable', 'in:ft,2pt,3pt'],
+            'is_made' => ['nullable', 'in:0,1'],
+            'court_x' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'court_y' => ['nullable', 'numeric', 'min:0', 'max:100'],
+        ];
 
-        $player = GamePlayer::where('game_id', $game->id)
-            ->findOrFail($validated['game_player_id']);
+        $validated = $request->validate($baseRules);
 
-        GameEvent::create([
+        $eventData = [
             'game_id' => $game->id,
             'game_player_id' => $player->id,
             'team_side' => $player->team_side,
             'quarter' => $validated['quarter'],
-            'shot_type' => $validated['shot_type'],
-            'is_made' => (bool) $validated['is_made'],
-            'court_x' => $validated['court_x'] ?? null,
-            'court_y' => $validated['court_y'] ?? null,
-        ]);
+            'event_type' => $eventType,
+            'event_subtype' => null,
+            'shot_type' => null,
+            'is_made' => null,
+            'court_x' => null,
+            'court_y' => null,
+        ];
 
-        return redirect()->route('games.show', $game)
+        if ($eventType === 'shot') {
+            $shotValidated = $request->validate([
+                'shot_type' => ['required', 'in:ft,2pt,3pt'],
+                'is_made' => ['required', 'in:0,1'],
+                'court_x' => ['required_if:shot_type,2pt,3pt', 'nullable', 'numeric', 'min:0', 'max:100'],
+                'court_y' => ['required_if:shot_type,2pt,3pt', 'nullable', 'numeric', 'min:0', 'max:100'],
+            ]);
+
+            $eventData['shot_type'] = $shotValidated['shot_type'];
+            $eventData['is_made'] = (bool) $shotValidated['is_made'];
+            $eventData['court_x'] = $shotValidated['shot_type'] === 'ft' ? null : $shotValidated['court_x'];
+            $eventData['court_y'] = $shotValidated['shot_type'] === 'ft' ? null : $shotValidated['court_y'];
+        }
+
+        if ($eventType === 'rebound') {
+            $eventData['event_subtype'] = $validated['event_subtype'] ?? null;
+        }
+
+        GameEvent::create($eventData);
+
+        return redirect()
+            ->route('games.show', $game)
             ->with('success', 'Notikums pievienots.');
     }
 
@@ -165,7 +194,8 @@ class GameProtocolController extends Controller
             ->route('games.index')
             ->with('success', 'Spēle izdzēsta.');
     }
-        public function toggleVisibility(Game $game)
+
+    public function toggleVisibility(Game $game)
     {
         $this->checkGameOwnerOrAdmin($game);
 
@@ -259,6 +289,10 @@ class GameProtocolController extends Controller
 
     private function eventPoints(GameEvent $event): int
     {
+        if (($event->event_type ?? 'shot') !== 'shot') {
+            return 0;
+        }
+
         if (!$event->is_made) {
             return 0;
         }
