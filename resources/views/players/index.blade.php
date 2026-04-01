@@ -68,7 +68,9 @@
                             <td class="p-2">
                                 @if($player->image)
                                     <img src="{{ asset('storage/' . $player->image) }}" alt="Spēlētāja bilde" class="h-12 w-12 rounded object-cover">
+                                    <p class="text-red-500 text-xs">{{ $player->image }}</p>
                                 @else
+                                
                                     <span class="text-gray-400 text-sm">Nav</span>
                                 @endif
                             </td>

@@ -6,6 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Team extends Model
 {
-    protected $fillable = ['name', 'country', 'league'];
+    protected $fillable = ['name', 'country', 'league', 'logo'];
 }
 
