@@ -15,11 +15,10 @@ COPY . .
 RUN COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --optimize-autoloader
 RUN npm ci && npm run build
 
-RUN mkdir -p database && touch database/database.sqlite \
-    && php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
+RUN mkdir -p database && touch database/database.sqlite
+RUN mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache storage/logs \
+    && chmod -R 777 storage bootstrap/cache
 
 EXPOSE 80
 
-CMD ["sh", "-c", "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=80"]
+CMD ["sh", "-c", "php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan serve --host=0.0.0.0 --port=80"]
