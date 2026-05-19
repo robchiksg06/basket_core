@@ -72,7 +72,7 @@ Route::get('/public/players', [PlayerController::class, 'publicView'])->name('pl
 
 Route::get('/public/players/{player}', function (\App\Models\Player $player) {
     return view('players.show', compact('player'));
-})->name('players.show');
+})->name('players.public.show');
 
 Route::post('/players/{player}/like', [LikeController::class, 'toggle'])
     ->middleware('auth')
