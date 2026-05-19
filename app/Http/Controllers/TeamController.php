@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\League;
 use App\Models\Team;
 use Illuminate\Http\Request;
 
@@ -13,20 +14,36 @@ class TeamController extends Controller
         $league = $request->input('league');
         $sort = $request->input('sort', 'name');
         $direction = $request->input('direction', 'asc');
-    
-        // Iegūstam unikālās līgas izvēlnei
-        $leagues = Team::select('league')->distinct()->pluck('league');
-    
-        // Meklēšana un filtrēšana
-        $teams = Team::query()
-            ->when($search, fn($query) => $query->where('name', 'like', "%{$search}%"))
-            ->when($league, fn($query) => $query->where('league', $league))
-            ->orderBy($sort, $direction)
-            ->get();
-    
-        return view('teams.index', compact('teams', 'search', 'sort', 'direction', 'leagues'));
+
+        $leagues = League::orderBy('name')->pluck('name', 'id');
+
+        $teamsQuery = Team::with('leagues')
+            ->when($search, function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%");
+            })
+            ->when($league, function ($query) use ($league) {
+                $query->whereHas('leagues', function ($q) use ($league) {
+                    $q->where('leagues.id', $league);
+                });
+            });
+
+        if (in_array($sort, ['name', 'country'])) {
+            $teamsQuery->orderBy($sort, $direction);
+        } else {
+            $teamsQuery->orderBy('name', 'asc');
+        }
+
+        $teams = $teamsQuery->get();
+
+        return view('teams.index', compact('teams', 'search', 'sort', 'direction', 'leagues', 'league'));
     }
-    
+
+    public function show(Team $team)
+    {
+        $team->load(['leagues', 'players']);
+
+        return view('teams.show', compact('team'));
+    }
 
     public function create()
     {
@@ -38,7 +55,6 @@ class TeamController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'country' => 'nullable|string|max:255',
-            'league' => 'nullable|string|max:255',
         ]);
 
         Team::create($validated);
@@ -56,7 +72,6 @@ class TeamController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'country' => 'nullable|string|max:255',
-            'league' => 'nullable|string|max:255',
         ]);
 
         $team->update($validated);
@@ -71,5 +86,3 @@ class TeamController extends Controller
         return redirect()->route('teams.index')->with('success', 'Komanda dzēsta!');
     }
 }
-
-

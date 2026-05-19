@@ -10,11 +10,19 @@ return new class extends Migration {
         Schema::create('game_events', function (Blueprint $table) {
             $table->id();
             $table->foreignId('game_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('game_player_id')->constrained('game_players')->cascadeOnDelete();
-            $table->enum('team_side', ['home', 'away']);
+            $table->foreignId('game_player_id')->constrained()->cascadeOnDelete();
+            $table->string('team_side');
             $table->unsignedTinyInteger('quarter');
-            $table->enum('shot_type', ['ft', '2pt', '3pt']);
-            $table->boolean('is_made');
+
+            $table->string('event_type')->default('shot');
+            $table->string('event_subtype')->nullable();
+
+            $table->string('shot_type')->nullable();
+            $table->boolean('is_made')->nullable();
+
+            $table->decimal('court_x', 8, 2)->nullable();
+            $table->decimal('court_y', 8, 2)->nullable();
+
             $table->timestamps();
         });
     }

@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\Players\Schemas;
 
+use App\Models\Team;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -31,8 +33,22 @@ class PlayerForm
                             ->minValue(100)
                             ->maxValue(300),
 
-                        TextInput::make('team')
+                        Select::make('team_id')
                             ->label('Komanda')
+                            ->options(Team::pluck('name', 'id'))
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                $team = Team::find($state);
+                                $set('team', $team?->name);
+                            }),
+
+                        TextInput::make('team')
+                            ->label('Komandas nosaukums')
+                            ->disabled()
+                            ->dehydrated()
                             ->maxLength(255),
 
                         FileUpload::make('image')

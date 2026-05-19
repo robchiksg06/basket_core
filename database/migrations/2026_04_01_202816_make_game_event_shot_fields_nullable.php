@@ -6,23 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('game_events', function (Blueprint $table) {
-            //
+            $table->string('shot_type')->nullable()->change();
+            $table->boolean('is_made')->nullable()->change();
+            $table->decimal('court_x', 8, 2)->nullable()->change();
+            $table->decimal('court_y', 8, 2)->nullable()->change();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('game_events', function (Blueprint $table) {
-            //
+            $table->string('shot_type')->nullable(false)->change();
+            $table->boolean('is_made')->nullable(false)->default(false)->change();
+            $table->decimal('court_x', 8, 2)->nullable(false)->default(0)->change();
+            $table->decimal('court_y', 8, 2)->nullable(false)->default(0)->change();
         });
     }
 };

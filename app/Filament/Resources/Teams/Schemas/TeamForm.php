@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources\Teams\Schemas;
 
+use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
 
 class TeamForm
@@ -30,9 +32,12 @@ class TeamForm
                             ->label('Valsts')
                             ->maxLength(100),
 
-                        TextInput::make('league')
-                            ->label('Līga')
-                            ->maxLength(255),
+                        Select::make('leagues')
+                            ->label('Līgas')
+                            ->relationship('leagues', 'name')
+                            ->multiple()
+                            ->preload()
+                            ->searchable(),
                     ])
                     ->columns(2),
             ]);

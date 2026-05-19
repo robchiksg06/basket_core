@@ -32,6 +32,10 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
         ];
     }
+    public function isAdmin(): bool
+    {
+    return $this->role === 'admin';
+    }
 
     public function likes()
     {

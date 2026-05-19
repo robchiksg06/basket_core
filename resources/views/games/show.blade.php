@@ -27,34 +27,102 @@
             ];
         })
         ->values();
+
+    $statusColor = match($game->status) {
+        'live'     => 'bg-green-500',
+        'finished' => 'bg-red-500',
+        default    => 'bg-gray-400',
+    };
+    $statusLabel = match($game->status) {
+        'live'     => 'Notiek',
+        'finished' => 'Pabeigta',
+        default    => 'Gaidāma',
+    };
 @endphp
 
-<div class="bg-white rounded shadow p-6 mb-6">
-    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-            <h1 class="text-3xl font-bold">
-                {{ $game->home_team_name }} {{ $game->home_score }} : {{ $game->away_score }} {{ $game->away_team_name }}
-            </h1>
-            <p class="text-gray-600 mt-2">
-                {{ $game->title }} |
-                {{ $game->game_date }} |
-                {{ $game->location }} |
-                Statuss: {{ $game->status }} |
-                {{ $game->is_public ? 'Publiska spēle' : 'Privāta spēle' }}
-            </p>
+{{-- ============================================================
+     SCOREBOARD HERO
+     ============================================================ --}}
+<div class="bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 text-white mb-6 shadow-xl">
+    <div class="max-w-6xl mx-auto px-6 py-8">
+
+        {{-- Game meta row --}}
+        <div class="flex flex-wrap items-center gap-3 mb-6 text-sm text-white/60">
+            <a href="{{ route('games.index') }}" class="hover:text-white transition">← Spēles</a>
+            <span>/</span>
+            @if($game->title)
+                <span class="text-white/80">{{ $game->title }}</span>
+                <span>/</span>
+            @endif
+            <span class="inline-flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full {{ $statusColor }} {{ $game->status === 'live' ? 'animate-pulse' : '' }}"></span>
+                {{ $statusLabel }}
+            </span>
+            @if($game->game_date)
+                <span>·</span>
+                <span>{{ $game->game_date }}</span>
+            @endif
+            @if($game->location)
+                <span>·</span>
+                <span>{{ $game->location }}</span>
+            @endif
+            <span>·</span>
+            <span class="inline-flex items-center gap-1 text-white/50">
+                @if($game->is_public)
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    Publiska
+                @else
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                    Privāta
+                @endif
+            </span>
         </div>
 
-        <div class="flex gap-3 flex-wrap">
-            <a href="{{ route('games.print', $game) }}" target="_blank" class="bg-gray-800 text-white px-4 py-2 rounded">
-                Print protokols
+        {{-- Scoreboard --}}
+        <div class="flex items-center justify-between gap-4">
+            <div class="flex-1 text-center md:text-left">
+                <div class="text-sm font-semibold text-white/50 uppercase tracking-widest mb-1">Mājinieki</div>
+                <div class="text-3xl md:text-4xl font-extrabold text-white leading-tight">
+                    {{ $game->home_team_name }}
+                </div>
+            </div>
+
+            <div class="flex-shrink-0 text-center">
+                <div class="flex items-center gap-4">
+                    <span class="text-6xl md:text-7xl font-black text-white tabular-nums">{{ $game->home_score }}</span>
+                    <span class="text-3xl font-light text-white/40">:</span>
+                    <span class="text-6xl md:text-7xl font-black text-orange-400 tabular-nums">{{ $game->away_score }}</span>
+                </div>
+            </div>
+
+            <div class="flex-1 text-center md:text-right">
+                <div class="text-sm font-semibold text-white/50 uppercase tracking-widest mb-1">Viesi</div>
+                <div class="text-3xl md:text-4xl font-extrabold text-orange-400 leading-tight">
+                    {{ $game->away_team_name }}
+                </div>
+            </div>
+        </div>
+
+        {{-- Action buttons --}}
+        <div class="flex flex-wrap items-center gap-3 mt-7 pt-6 border-t border-white/10">
+            <a href="{{ route('games.print', $game) }}" target="_blank"
+               class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                Drukāt protokolu
             </a>
 
             @if($canManageGame)
                 <form action="{{ route('games.visibility', $game) }}" method="POST">
                     @csrf
                     @method('PATCH')
-                    <button class="bg-yellow-500 text-white px-4 py-2 rounded">
-                        {{ $game->is_public ? 'Padarīt privātu' : 'Padarīt publisku' }}
+                    <button class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+                        @if($game->is_public)
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                            Padarīt privātu
+                        @else
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            Padarīt publisku
+                        @endif
                     </button>
                 </form>
             @endif
@@ -62,7 +130,8 @@
             @if($canManageGame && $game->status !== 'finished')
                 <form action="{{ route('games.finish', $game) }}" method="POST">
                     @csrf
-                    <button class="bg-green-600 text-white px-4 py-2 rounded">
+                    <button class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-white px-4 py-2 rounded-xl text-sm font-bold transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         Pabeigt spēli
                     </button>
                 </form>
@@ -71,388 +140,436 @@
     </div>
 </div>
 
-@if(!$canManageGame)
-    <div class="mb-6 rounded bg-blue-100 border border-blue-300 text-blue-800 px-4 py-3">
-        Šī ir publiska spēle skatīšanās režīmā. Spēles notikumus var rediģēt tikai autors.
-    </div>
-@endif
+<div class="max-w-6xl mx-auto px-4 space-y-6 pb-10">
 
-@if($canManageGame)
-    <div class="bg-white rounded shadow p-6 mb-6">
-        <h2 class="text-2xl font-bold mb-4">Pievienot notikumu</h2>
+    {{-- Read-only notice --}}
+    @if(!$canManageGame)
+        <div class="flex items-center gap-3 rounded-2xl bg-blue-50 border border-blue-200 text-blue-800 px-5 py-4 text-sm">
+            <svg class="w-5 h-5 flex-shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Skatīšanās režīms — spēles notikumus var rediģēt tikai autors.
+        </div>
+    @endif
 
-        <form action="{{ route('games.events.store', $game) }}" method="POST" class="shot-form space-y-4">
-            @csrf
+    {{-- ============================================================
+         EVENT FORM
+         ============================================================ --}}
+    @if($canManageGame)
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="bg-gradient-to-r from-orange-500 to-orange-600 px-8 py-5">
+                <h2 class="text-lg font-bold text-white tracking-wide uppercase">Pievienot notikumu</h2>
+            </div>
 
-            <input type="hidden" name="court_x" class="court-x-input">
-            <input type="hidden" name="court_y" class="court-y-input">
-            <input type="hidden" name="shot_type" class="shot-type-input">
+            <form action="{{ route('games.events.store', $game) }}" method="POST" class="shot-form p-8 space-y-6">
+                @csrf
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                    <label class="block font-semibold mb-1">Spēlētājs</label>
-                    <select name="game_player_id" class="w-full border rounded px-3 py-2" required>
-                        <option value="">Izvēlies spēlētāju</option>
+                <input type="hidden" name="court_x" class="court-x-input">
+                <input type="hidden" name="court_y" class="court-y-input">
+                <input type="hidden" name="shot_type" class="shot-type-input">
 
-                        <optgroup label="{{ $game->home_team_name }}">
-                            @foreach($homePlayers as $player)
-                                <option value="{{ $player->id }}">
-                                    #{{ $player->jersey_number }} {{ $player->player_name }}
-                                </option>
-                            @endforeach
-                        </optgroup>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Spēlētājs</label>
+                        <select name="game_player_id"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-sm" required>
+                            <option value="">Izvēlies spēlētāju</option>
+                            <optgroup label="{{ $game->home_team_name }}">
+                                @foreach($homePlayers as $player)
+                                    <option value="{{ $player->id }}">#{{ $player->jersey_number }} {{ $player->player_name }}</option>
+                                @endforeach
+                            </optgroup>
+                            <optgroup label="{{ $game->away_team_name }}">
+                                @foreach($awayPlayers as $player)
+                                    <option value="{{ $player->id }}">#{{ $player->jersey_number }} {{ $player->player_name }}</option>
+                                @endforeach
+                            </optgroup>
+                        </select>
+                    </div>
 
-                        <optgroup label="{{ $game->away_team_name }}">
-                            @foreach($awayPlayers as $player)
-                                <option value="{{ $player->id }}">
-                                    #{{ $player->jersey_number }} {{ $player->player_name }}
-                                </option>
-                            @endforeach
-                        </optgroup>
-                    </select>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Ceturtdaļa</label>
+                        <select name="quarter"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-sm" required>
+                            <option value="1">Q1</option>
+                            <option value="2">Q2</option>
+                            <option value="3">Q3</option>
+                            <option value="4">Q4</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Notikuma tips</label>
+                        <select name="event_type"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-sm event-type-select" required>
+                            <option value="shot">Metiens</option>
+                            <option value="rebound">Atlēkusī bumba</option>
+                            <option value="assist">Piespēle</option>
+                            <option value="steal">Pārķerta bumba</option>
+                            <option value="turnover">Kļūda</option>
+                        </select>
+                    </div>
+
+                    <div class="event-subtype-wrap hidden">
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Atlēkušās bumbas tips</label>
+                        <select name="event_subtype"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-sm event-subtype-select">
+                            <option value="">Nav</option>
+                            <option value="offensive">Uzbrukumā</option>
+                            <option value="defensive">Aizsardzībā</option>
+                        </select>
+                    </div>
+
+                    <div class="shot-type-wrap">
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Metiena tips</label>
+                        <div class="w-full border border-gray-200 rounded-xl px-3 py-2.5 bg-gray-50 text-slate-500 text-sm shot-type-label">
+                            Nav izvēlēts
+                        </div>
+                    </div>
                 </div>
 
+                <div class="shot-only-wrap">
+                    <div class="max-w-2xl mx-auto">
+                        <div
+                            class="court-picker relative w-full cursor-crosshair rounded-2xl overflow-hidden border-2 border-gray-200 shadow-md hover:border-orange-400 transition"
+                            style="aspect-ratio: 2 / 1;"
+                        >
+                            <img
+                                src="{{ asset('images/court.png') }}"
+                                class="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+                                alt="Basketbola laukums"
+                            >
+                            <div class="shot-marker hidden absolute w-5 h-5 rounded-full bg-blue-500 border-2 border-white shadow-lg -translate-x-1/2 -translate-y-1/2 ring-2 ring-blue-300"></div>
+                        </div>
+
+                        <p class="text-center text-sm text-gray-400 mt-3">
+                            Uzspied uz laukuma, lai atzīmētu metiena vietu
+                        </p>
+
+                        <div class="shot-buttons-wrap mt-4 space-y-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <button type="submit" name="is_made" value="1"
+                                        class="bg-green-600 hover:bg-green-500 text-white rounded-xl py-3.5 font-bold text-sm shadow-sm transition flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                    Iemeta
+                                </button>
+                                <button type="submit" name="is_made" value="0"
+                                        class="bg-red-600 hover:bg-red-500 text-white rounded-xl py-3.5 font-bold text-sm shadow-sm transition flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    Garām
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button type="submit" name="ft_result" value="1"
+                                        class="bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-3 font-semibold text-sm shadow-sm transition">
+                                    FT iemeta
+                                </button>
+                                <button type="submit" name="ft_result" value="0"
+                                        class="bg-slate-600 hover:bg-slate-500 text-white rounded-xl py-3 font-semibold text-sm shadow-sm transition">
+                                    FT garām
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="non-shot-help hidden text-center text-sm text-gray-400 py-2">
+                    Šim notikumam nav jāatzīmē vieta uz laukuma.
+                </div>
+
+                <div class="non-shot-buttons-wrap hidden max-w-2xl mx-auto">
+                    <button type="submit"
+                            class="w-full bg-slate-700 hover:bg-slate-600 text-white rounded-xl py-3.5 font-bold text-sm shadow-sm transition">
+                        Pievienot notikumu
+                    </button>
+                </div>
+            </form>
+        </div>
+    @endif
+
+    {{-- ============================================================
+         SHOT MAP
+         ============================================================ --}}
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-8 py-5 border-b border-gray-100 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center">
+                <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"/></svg>
+            </div>
+            <h2 class="text-xl font-bold text-slate-900">Metienu karte</h2>
+        </div>
+
+        <div class="p-8">
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
                 <div>
-                    <label class="block font-semibold mb-1">Ceturtdaļa</label>
-                    <select name="quarter" class="w-full border rounded px-3 py-2" required>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Spēlētājs</label>
+                    <select id="filter-player" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                        <option value="">Visi</option>
+                        @foreach($allPlayers as $player)
+                            <option value="{{ $player->id }}">#{{ $player->jersey_number }} {{ $player->player_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Komanda</label>
+                    <select id="filter-team" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                        <option value="">Abas</option>
+                        <option value="home">{{ $game->home_team_name }}</option>
+                        <option value="away">{{ $game->away_team_name }}</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Ceturtdaļa</label>
+                    <select id="filter-quarter" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                        <option value="">Visas</option>
                         <option value="1">Q1</option>
                         <option value="2">Q2</option>
                         <option value="3">Q3</option>
                         <option value="4">Q4</option>
                     </select>
                 </div>
-
                 <div>
-                    <label class="block font-semibold mb-1">Notikuma tips</label>
-                    <select name="event_type" class="w-full border rounded px-3 py-2 event-type-select" required>
-                        <option value="shot">Metiens</option>
-                        <option value="rebound">Atlēkusī bumba</option>
-                        <option value="assist">Assist</option>
-                        <option value="steal">Steal</option>
-                        <option value="turnover">Turnover</option>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Rezultāts</label>
+                    <select id="filter-result" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                        <option value="">Visi</option>
+                        <option value="1">Iemesti</option>
+                        <option value="0">Garām</option>
                     </select>
                 </div>
-
-                <div class="event-subtype-wrap hidden">
-                    <label class="block font-semibold mb-1">Atlēkušās bumbas tips</label>
-                    <select name="event_subtype" class="w-full border rounded px-3 py-2 event-subtype-select">
-                        <option value="">Nav</option>
-                        <option value="offensive">Uzbrukumā</option>
-                        <option value="defensive">Aizsardzībā</option>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Tips</label>
+                    <select id="filter-shot-type" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                        <option value="">Visi</option>
+                        <option value="ft">1PT</option>
+                        <option value="2pt">2PT</option>
+                        <option value="3pt">3PT</option>
                     </select>
                 </div>
+            </div>
 
-                <div class="shot-type-wrap md:col-span-1">
-                    <label class="block font-semibold mb-1">Metiena tips</label>
-                    <div class="w-full border rounded px-3 py-2 bg-gray-50 text-gray-700 shot-type-label">
-                        Nav izvēlēts
+            <div class="max-w-2xl mx-auto">
+                <div id="shots-court"
+                     class="relative w-full rounded-2xl overflow-hidden border-2 border-gray-200 shadow-md"
+                     style="aspect-ratio: 2 / 1;">
+                    <img src="{{ asset('images/court.png') }}"
+                         class="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+                         alt="Basketbola laukums">
+                    <div id="shots-layer" class="absolute inset-0"></div>
+                </div>
+
+                <div class="flex items-center justify-center gap-8 mt-4 text-sm text-gray-500">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3.5 h-3.5 rounded-full bg-green-600 border border-white shadow-sm inline-block"></span>
+                        Iemests
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="relative inline-block w-3.5 h-3.5">
+                            <span class="absolute left-1/2 top-1/2 w-3.5 h-[2px] bg-red-500" style="transform: translate(-50%, -50%) rotate(45deg);"></span>
+                            <span class="absolute left-1/2 top-1/2 w-3.5 h-[2px] bg-red-500" style="transform: translate(-50%, -50%) rotate(-45deg);"></span>
+                        </span>
+                        Garām
                     </div>
                 </div>
+
+                <div id="shots-summary" class="text-center text-sm text-gray-400 mt-2">-</div>
             </div>
-
-            <div class="max-w-[600px] mx-auto shot-only-wrap">
-                <div
-                    class="court-picker relative w-full cursor-crosshair rounded-xl overflow-hidden border shadow"
-                    style="aspect-ratio: 2 / 1;"
-                >
-                    <img
-                        src="{{ asset('images/court.png') }}"
-                        class="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
-                        alt="Basketbola laukums"
-                    >
-
-                    <div class="shot-marker hidden absolute w-4 h-4 rounded-full bg-blue-600 border-2 border-white shadow-md -translate-x-1/2 -translate-y-1/2"></div>
-                </div>
-
-                <div class="text-sm text-gray-700 text-center mt-4">
-                    Uzspied uz laukuma, lai atzīmētu metiena vietu
-                </div>
-
-                <div class="shot-buttons-wrap">
-                    <div class="grid grid-cols-2 gap-4 mt-4">
-                        <button
-                            type="submit"
-                            name="is_made"
-                            value="1"
-                            class="bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-3 font-semibold shadow-sm"
-                        >
-                            Iemeta
-                        </button>
-
-                        <button
-                            type="submit"
-                            name="is_made"
-                            value="0"
-                            class="bg-red-600 hover:bg-red-700 text-white rounded-xl px-4 py-3 font-semibold shadow-sm"
-                        >
-                            Garām
-                        </button>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4 mt-3">
-                        <button
-                            type="submit"
-                            name="ft_result"
-                            value="1"
-                            class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-3 font-semibold shadow-sm"
-                        >
-                            FT iemeta
-                        </button>
-
-                        <button
-                            type="submit"
-                            name="ft_result"
-                            value="0"
-                            class="bg-gray-700 hover:bg-gray-800 text-white rounded-xl px-4 py-3 font-semibold shadow-sm"
-                        >
-                            FT garām
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="non-shot-help hidden text-sm text-gray-600 text-center">
-                Šim notikumam nav jāatzīmē vieta uz laukuma.
-            </div>
-
-            <div class="non-shot-buttons-wrap hidden mt-4 max-w-[600px] mx-auto">
-                <button
-                    type="submit"
-                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 py-3 font-semibold shadow-sm"
-                >
-                    Pievienot notikumu
-                </button>
-            </div>
-        </form>
-    </div>
-@endif
-
-<div class="bg-white rounded shadow p-6 mb-6">
-    <h2 class="text-2xl font-bold mb-4">Metienu karte</h2>
-
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-        <div>
-            <label class="block font-semibold mb-1">Spēlētājs</label>
-            <select id="filter-player" class="w-full border rounded px-3 py-2">
-                <option value="">Visi spēlētāji</option>
-                @foreach($allPlayers as $player)
-                    <option value="{{ $player->id }}">
-                        #{{ $player->jersey_number }} {{ $player->player_name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        <div>
-            <label class="block font-semibold mb-1">Komanda</label>
-            <select id="filter-team" class="w-full border rounded px-3 py-2">
-                <option value="">Abas komandas</option>
-                <option value="home">{{ $game->home_team_name }}</option>
-                <option value="away">{{ $game->away_team_name }}</option>
-            </select>
-        </div>
-
-        <div>
-            <label class="block font-semibold mb-1">Ceturtdaļa</label>
-            <select id="filter-quarter" class="w-full border rounded px-3 py-2">
-                <option value="">Visas ceturtdaļas</option>
-                <option value="1">Q1</option>
-                <option value="2">Q2</option>
-                <option value="3">Q3</option>
-                <option value="4">Q4</option>
-            </select>
-        </div>
-
-        <div>
-            <label class="block font-semibold mb-1">Rezultāts</label>
-            <select id="filter-result" class="w-full border rounded px-3 py-2">
-                <option value="">Visi</option>
-                <option value="1">Iemesti</option>
-                <option value="0">Garām</option>
-            </select>
-        </div>
-
-        <div>
-            <label class="block font-semibold mb-1">Metiena tips</label>
-            <select id="filter-shot-type" class="w-full border rounded px-3 py-2">
-                <option value="">Visi tipi</option>
-                <option value="ft">1PT</option>
-                <option value="2pt">2PT</option>
-                <option value="3pt">3PT</option>
-            </select>
         </div>
     </div>
 
-    <div class="max-w-[600px] mx-auto">
-        <div
-            id="shots-court"
-            class="relative w-full rounded-xl overflow-hidden border shadow"
-            style="aspect-ratio: 2 / 1;"
-        >
-            <img
-                src="{{ asset('images/court.png') }}"
-                class="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
-                alt="Basketbola laukums"
-            >
-
-            <div id="shots-layer" class="absolute inset-0"></div>
-        </div>
-
-        <div class="flex items-center justify-center gap-6 mt-4 text-sm text-gray-700">
-            <div class="flex items-center gap-2">
-                <span class="inline-block w-4 h-4 rounded-full bg-green-600 border border-white"></span>
-                <span>Iemests</span>
+    {{-- ============================================================
+         QUARTER SCORES
+         ============================================================ --}}
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-8 py-5 border-b border-gray-100 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center">
+                <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
             </div>
-            <div class="flex items-center gap-2">
-                <span class="relative inline-block w-4 h-4">
-                    <span class="absolute left-1/2 top-1/2 w-4 h-[2px] bg-red-600" style="transform: translate(-50%, -50%) rotate(45deg);"></span>
-                    <span class="absolute left-1/2 top-1/2 w-4 h-[2px] bg-red-600" style="transform: translate(-50%, -50%) rotate(-45deg);"></span>
-                </span>
-                <span>Garām</span>
-            </div>
+            <h2 class="text-xl font-bold text-slate-900">Ceturtdaļu rezultāts</h2>
         </div>
-
-        <div id="shots-summary" class="text-center text-sm text-gray-600 mt-3">
-            -
+        <div class="p-6 overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-xs text-slate-400 uppercase tracking-wider">
+                        <th class="text-left py-2 px-4 font-semibold">Komanda</th>
+                        <th class="text-center py-2 px-4 font-semibold">Q1</th>
+                        <th class="text-center py-2 px-4 font-semibold">Q2</th>
+                        <th class="text-center py-2 px-4 font-semibold">Q3</th>
+                        <th class="text-center py-2 px-4 font-semibold">Q4</th>
+                        <th class="text-center py-2 px-4 font-semibold text-slate-700">Kopā</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-3 px-4 font-semibold text-slate-800">{{ $game->home_team_name }}</td>
+                        <td class="py-3 px-4 text-center text-slate-600">{{ $quarterScores[1]['home'] }}</td>
+                        <td class="py-3 px-4 text-center text-slate-600">{{ $quarterScores[2]['home'] }}</td>
+                        <td class="py-3 px-4 text-center text-slate-600">{{ $quarterScores[3]['home'] }}</td>
+                        <td class="py-3 px-4 text-center text-slate-600">{{ $quarterScores[4]['home'] }}</td>
+                        <td class="py-3 px-4 text-center font-black text-xl text-slate-900">{{ $game->home_score }}</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-3 px-4 font-semibold text-orange-700">{{ $game->away_team_name }}</td>
+                        <td class="py-3 px-4 text-center text-slate-600">{{ $quarterScores[1]['away'] }}</td>
+                        <td class="py-3 px-4 text-center text-slate-600">{{ $quarterScores[2]['away'] }}</td>
+                        <td class="py-3 px-4 text-center text-slate-600">{{ $quarterScores[3]['away'] }}</td>
+                        <td class="py-3 px-4 text-center text-slate-600">{{ $quarterScores[4]['away'] }}</td>
+                        <td class="py-3 px-4 text-center font-black text-xl text-orange-600">{{ $game->away_score }}</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
-</div>
 
-<div class="bg-white rounded shadow p-6 mb-6">
-    <h2 class="text-2xl font-bold mb-4">Ceturtdaļu rezultāts</h2>
-    <table class="w-full border">
-        <thead class="bg-gray-50">
-            <tr>
-                <th class="border px-3 py-2">Komanda</th>
-                <th class="border px-3 py-2">Q1</th>
-                <th class="border px-3 py-2">Q2</th>
-                <th class="border px-3 py-2">Q3</th>
-                <th class="border px-3 py-2">Q4</th>
-                <th class="border px-3 py-2">Kopā</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td class="border px-3 py-2 font-semibold">{{ $game->home_team_name }}</td>
-                <td class="border px-3 py-2">{{ $quarterScores[1]['home'] }}</td>
-                <td class="border px-3 py-2">{{ $quarterScores[2]['home'] }}</td>
-                <td class="border px-3 py-2">{{ $quarterScores[3]['home'] }}</td>
-                <td class="border px-3 py-2">{{ $quarterScores[4]['home'] }}</td>
-                <td class="border px-3 py-2 font-bold">{{ $game->home_score }}</td>
-            </tr>
-            <tr>
-                <td class="border px-3 py-2 font-semibold">{{ $game->away_team_name }}</td>
-                <td class="border px-3 py-2">{{ $quarterScores[1]['away'] }}</td>
-                <td class="border px-3 py-2">{{ $quarterScores[2]['away'] }}</td>
-                <td class="border px-3 py-2">{{ $quarterScores[3]['away'] }}</td>
-                <td class="border px-3 py-2">{{ $quarterScores[4]['away'] }}</td>
-                <td class="border px-3 py-2 font-bold">{{ $game->away_score }}</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-<div class="bg-white rounded shadow p-6 mb-6">
-    <h2 class="text-2xl font-bold mb-4">Visi notikumi</h2>
-
-    <table class="w-full border">
-        <thead class="bg-gray-50">
-            <tr>
-                <th class="border px-3 py-2">Laiks</th>
-                <th class="border px-3 py-2">Q</th>
-                <th class="border px-3 py-2">Komanda</th>
-                <th class="border px-3 py-2">Spēlētājs</th>
-                <th class="border px-3 py-2">Notikums</th>
-                <th class="border px-3 py-2">Rezultāts / Tips</th>
-                <th class="border px-3 py-2">Vieta</th>
-                <th class="border px-3 py-2"></th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($game->events->sortByDesc('id') as $event)
-                @php
-                    $eventType = $event->event_type ?? 'shot';
-
-                    $eventLabel = match($eventType) {
-                        'shot' => strtoupper($event->shot_type ?? '-'),
-                        'rebound' => 'Atlēkusī bumba',
-                        'assist' => 'Assist',
-                        'steal' => 'Steal',
-                        'turnover' => 'Turnover',
-                        default => ucfirst($eventType),
-                    };
-
-                    $eventMeta = match($eventType) {
-                        'shot' => $event->is_made ? 'Sekmīgs' : 'Nesekmīgs',
-                        'rebound' => match($event->event_subtype) {
-                            'offensive' => 'Uzbrukumā',
-                            'defensive' => 'Aizsardzībā',
-                            default => 'Bez tipa',
-                        },
-                        'assist' => 'Piespēle',
-                        'steal' => 'Pārķerta bumba',
-                        'turnover' => 'Kļūda',
-                        default => '-',
-                    };
-                @endphp
-
-                <tr>
-                    <td class="border px-3 py-2">{{ $event->created_at->format('H:i:s') }}</td>
-                    <td class="border px-3 py-2">{{ $event->quarter }}</td>
-                    <td class="border px-3 py-2">
-                        {{ $event->team_side === 'home' ? $game->home_team_name : $game->away_team_name }}
-                    </td>
-                    <td class="border px-3 py-2">
-                        #{{ $event->player?->jersey_number }} {{ $event->player?->player_name ?? 'Nezināms' }}
-                    </td>
-                    <td class="border px-3 py-2">{{ $eventLabel }}</td>
-                    <td class="border px-3 py-2">{{ $eventMeta }}</td>
-                    <td class="border px-3 py-2">
-                        @if(!is_null($event->court_x) && !is_null($event->court_y))
-                            {{ $event->court_x }}, {{ $event->court_y }}
-                        @else
-                            -
-                        @endif
-                    </td>
-                    <td class="border px-3 py-2">
+    {{-- ============================================================
+         EVENTS LOG
+         ============================================================ --}}
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-8 py-5 border-b border-gray-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                </div>
+                <h2 class="text-xl font-bold text-slate-900">Visi notikumi</h2>
+            </div>
+            <span class="text-sm text-gray-400">{{ $game->events->count() }} notikumi</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="bg-gray-50 text-xs text-slate-400 uppercase tracking-wider">
+                        <th class="text-left py-3 px-4 font-semibold">Laiks</th>
+                        <th class="text-center py-3 px-4 font-semibold">Q</th>
+                        <th class="text-left py-3 px-4 font-semibold">Komanda</th>
+                        <th class="text-left py-3 px-4 font-semibold">Spēlētājs</th>
+                        <th class="text-left py-3 px-4 font-semibold">Notikums</th>
+                        <th class="text-left py-3 px-4 font-semibold">Rezultāts</th>
+                        <th class="text-left py-3 px-4 font-semibold">Vieta</th>
                         @if($canManageGame)
-                            <form action="{{ route('games.events.delete', [$game, $event]) }}" method="POST">
-                                @csrf
-                                @method('DELETE')
-                                <button class="text-red-600 font-semibold">Dzēst</button>
-                            </form>
+                            <th class="py-3 px-4"></th>
                         @endif
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="8" class="border px-3 py-4 text-center text-gray-500">
-                        Vēl nav neviena notikuma.
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse($game->events->sortByDesc('id') as $event)
+                        @php
+                            $eventType = $event->event_type ?? 'shot';
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <div class="bg-white rounded shadow p-6">
-        <h2 class="text-2xl font-bold mb-4">{{ $game->home_team_name }} statistika</h2>
-        @include('games.partials.stats-table', ['players' => $homePlayers])
+                            $eventLabel = match($eventType) {
+                                'shot'     => strtoupper($event->shot_type ?? '-'),
+                                'rebound'  => 'Atlēkusī bumba',
+                                'assist'   => 'Piespēle',
+                                'steal'    => 'Pārķerta bumba',
+                                'turnover' => 'Kļūda',
+                                default    => ucfirst($eventType),
+                            };
+
+                            $eventBadge = match($eventType) {
+                                'shot'     => 'bg-orange-100 text-orange-700',
+                                'rebound'  => 'bg-blue-100 text-blue-700',
+                                'assist'   => 'bg-green-100 text-green-700',
+                                'steal'    => 'bg-purple-100 text-purple-700',
+                                'turnover' => 'bg-red-100 text-red-700',
+                                default    => 'bg-gray-100 text-gray-700',
+                            };
+
+                            $eventMeta = match($eventType) {
+                                'shot'     => $event->is_made ? 'Iemests' : 'Garām',
+                                'rebound'  => match($event->event_subtype) {
+                                    'offensive' => 'Uzbrukumā',
+                                    'defensive' => 'Aizsardzībā',
+                                    default     => '—',
+                                },
+                                'assist'   => 'Piespēle',
+                                'steal'    => 'Pārķerta bumba',
+                                'turnover' => 'Kļūda',
+                                default    => '—',
+                            };
+
+                            $metaColor = ($eventType === 'shot')
+                                ? ($event->is_made ? 'text-green-600 font-semibold' : 'text-red-500 font-semibold')
+                                : 'text-gray-500';
+                        @endphp
+
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="py-3 px-4 text-gray-400 font-mono text-xs">{{ $event->created_at->format('H:i:s') }}</td>
+                            <td class="py-3 px-4 text-center">
+                                <span class="inline-flex w-7 h-7 items-center justify-center rounded-lg bg-slate-100 text-slate-600 text-xs font-bold">Q{{ $event->quarter }}</span>
+                            </td>
+                            <td class="py-3 px-4 text-slate-600 text-xs">
+                                {{ $event->team_side === 'home' ? $game->home_team_name : $game->away_team_name }}
+                            </td>
+                            <td class="py-3 px-4 font-medium text-slate-800">
+                                <span class="text-gray-400 font-mono text-xs">#{{ $event->player?->jersey_number }}</span>
+                                {{ $event->player?->player_name ?? 'Nezināms' }}
+                            </td>
+                            <td class="py-3 px-4">
+                                <span class="inline-flex px-2.5 py-1 rounded-lg text-xs font-semibold {{ $eventBadge }}">
+                                    {{ $eventLabel }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 text-xs {{ $metaColor }}">{{ $eventMeta }}</td>
+                            <td class="py-3 px-4 text-xs text-gray-400 font-mono">
+                                @if(!is_null($event->court_x) && !is_null($event->court_y))
+                                    {{ round($event->court_x, 1) }}, {{ round($event->court_y, 1) }}
+                                @else
+                                    —
+                                @endif
+                            </td>
+                            @if($canManageGame)
+                                <td class="py-3 px-4">
+                                    <form action="{{ route('games.events.delete', [$game, $event]) }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="text-red-400 hover:text-red-600 text-xs font-semibold transition">Dzēst</button>
+                                    </form>
+                                </td>
+                            @endif
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="{{ $canManageGame ? 8 : 7 }}" class="py-10 text-center text-gray-400 text-sm">
+                                Vēl nav neviena notikuma.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <div class="bg-white rounded shadow p-6">
-        <h2 class="text-2xl font-bold mb-4">{{ $game->away_team_name }} statistika</h2>
-        @include('games.partials.stats-table', ['players' => $awayPlayers])
+    {{-- ============================================================
+         PLAYER STATS
+         ============================================================ --}}
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-slate-600 inline-block"></span>
+                <h2 class="text-base font-bold text-slate-900">{{ $game->home_team_name }}</h2>
+                <span class="text-gray-400 text-sm font-normal ml-1">statistika</span>
+            </div>
+            <div class="overflow-x-auto">
+                @include('games.partials.stats-table', ['players' => $homePlayers])
+            </div>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-orange-500 inline-block"></span>
+                <h2 class="text-base font-bold text-slate-900">{{ $game->away_team_name }}</h2>
+                <span class="text-gray-400 text-sm font-normal ml-1">statistika</span>
+            </div>
+            <div class="overflow-x-auto">
+                @include('games.partials.stats-table', ['players' => $awayPlayers])
+            </div>
+        </div>
     </div>
+
 </div>
 
+{{-- Tooltip --}}
 <div
     id="shot-tooltip"
-    class="hidden fixed z-50 min-w-[180px] max-w-[220px] rounded-lg bg-gray-900 text-white text-xs px-3 py-2 shadow-lg pointer-events-none"
+    class="hidden fixed z-50 min-w-[180px] max-w-[220px] rounded-xl bg-slate-900 text-white text-xs px-3 py-2.5 shadow-xl pointer-events-none border border-white/10"
 >
     <div id="tooltip-player" class="font-semibold text-sm"></div>
-    <div id="tooltip-meta" class="text-gray-200 mt-1"></div>
+    <div id="tooltip-meta" class="text-slate-400 mt-1"></div>
     <div id="tooltip-result" class="mt-1 font-medium"></div>
 </div>
 
@@ -509,7 +626,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-                function toggleEventUI() {
+        function toggleEventUI() {
             const eventType = eventTypeSelect?.value || 'shot';
             const isShot = eventType === 'shot';
             const isRebound = eventType === 'rebound';

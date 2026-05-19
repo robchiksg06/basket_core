@@ -44,7 +44,7 @@ class Game extends Model
     public function getHomeScoreAttribute(): int
     {
         return $this->events->where('team_side', 'home')->sum(function ($event) {
-            if (!$event->is_made) {
+            if (!$event->is_made || !$event->shot_type) {
                 return 0;
             }
 
@@ -52,6 +52,7 @@ class Game extends Model
                 'ft' => 1,
                 '2pt' => 2,
                 '3pt' => 3,
+                default => 0,
             };
         });
     }
@@ -59,7 +60,7 @@ class Game extends Model
     public function getAwayScoreAttribute(): int
     {
         return $this->events->where('team_side', 'away')->sum(function ($event) {
-            if (!$event->is_made) {
+            if (!$event->is_made || !$event->shot_type) {
                 return 0;
             }
 
@@ -67,6 +68,7 @@ class Game extends Model
                 'ft' => 1,
                 '2pt' => 2,
                 '3pt' => 3,
+                default => 0,
             };
         });
     }

@@ -2,23 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Team;
-use Illuminate\Http\Request;
+use App\Models\League;
 
 class LeagueController extends Controller
 {
-    public function show($league)
-{
-    // Atrod komandas, kas pieder šai līgai
-    $teams = \App\Models\Team::where('league', $league)->get();
+    public function index()
+    {
+        $leagues = League::all();
 
-    // Atgriež view ar komandām
-    return view('leagues.show', [
-        'league' => $league,
-        'teams' => $teams,
-    ]);
+        return view('leagues.index', [
+            'leagues' => $leagues,
+        ]);
+    }
+
+    public function show(League $league)
+    {
+        $league->load('teams');
+
+        return view('leagues.show', [
+            'league' => $league,
+            'teams' => $league->teams,
+        ]);
+    }
 }
-
-}
-
-

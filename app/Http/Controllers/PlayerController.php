@@ -18,9 +18,9 @@ class PlayerController extends Controller
             return redirect()->route('players.public');
         }
     
-        $sort = $request->get('sort', 'name');
-        $direction = $request->get('direction', 'asc');
-        $search = $request->get('search');
+        $sort      = $request->input('sort', 'name');
+        $direction = $request->input('direction', 'asc');
+        $search    = $request->input('search');
     
         $players = Player::query();
     
@@ -91,15 +91,27 @@ class PlayerController extends Controller
         return redirect()->route('players.index')->with('success', 'Spēlētājs dzēsts!');
     }
 
-    public function publicView()
+    public function publicView(Request $request)
     {
-        // Ja ielogojies un esi admins, redirect uz tabulu
         if (Auth::check() && Auth::user()->role === 'admin') {
             return redirect()->route('players.index');
         }
-    
-        $players = Player::orderBy('name')->get();
-        return view('players.cards', compact('players'));
+
+        $search   = $request->input('search');
+        $position = $request->input('position');
+        $team     = $request->input('team');
+
+        $players = Player::query()
+            ->when($search,   fn($q) => $q->where('name', 'LIKE', '%' . $search . '%'))
+            ->when($position, fn($q) => $q->where('position', $position))
+            ->when($team,     fn($q) => $q->where('team', $team))
+            ->orderBy('name')
+            ->get();
+
+        $positions = Player::whereNotNull('position')->where('position', '!=', '')->distinct()->orderBy('position')->pluck('position');
+        $teams     = Player::whereNotNull('team')->where('team', '!=', '')->distinct()->orderBy('team')->pluck('team');
+
+        return view('players.cards', compact('players', 'positions', 'teams', 'search', 'position', 'team'));
     }
     
           

@@ -4,125 +4,130 @@
     <meta charset="UTF-8">
     <title>{{ $title ?? 'BasketCore' }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     @vite('resources/css/app.css')
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const toggle = document.getElementById('darkToggle');
-            const html = document.documentElement;
-
-            if (toggle) {
-                toggle.checked = html.dataset.theme === 'dark';
-
-                toggle.addEventListener('change', function () {
-                    html.setAttribute('data-theme', this.checked ? 'dark' : 'light');
-                });
-            }
-        });
-    </script>
 </head>
 
 <body class="min-h-screen flex flex-col">
 
-<!-- HEADER -->
-<header class="w-full bg-gray-900 text-white px-6 py-4 shadow-md">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<header class="w-full bg-gray-900 text-white shadow-md relative z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
 
-        <!-- LOGO -->
-        <div class="flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-orange-500">🏀 BasketCore</h1>
+        {{-- Logo --}}
+        <a href="{{ route('home') }}" class="text-2xl font-bold text-orange-500 flex-shrink-0">🏀 BasketCore</a>
 
-            <label class="flex items-center gap-2 text-sm md:hidden">
-                <span>Dark Mode</span>
-                <input type="checkbox" id="darkToggle">
-            </label>
-        </div>
-
-        <!-- NAV -->
-        <div class="flex flex-wrap justify-end items-center gap-4">
-
-            <a href="{{ route('home') }}" class="hover:text-orange-400">Home</a>
-
+        {{-- Desktop nav --}}
+        <nav class="hidden md:flex items-center gap-5 text-sm">
+            <a href="{{ route('home') }}" class="hover:text-orange-400 transition">Sākums</a>
             @auth
-                <a href="{{ route('dashboard') }}" class="hover:text-orange-400">Dashboard</a>
-                <a href="{{ route('forum.index') }}" class="hover:text-orange-400">Forums</a>
-                <a href="{{ route('games.index') }}" class="hover:text-orange-400">Spēles</a>
-
-                <!-- 🔥 JAUNA SPĒLE -->
+                <a href="{{ route('dashboard') }}" class="hover:text-orange-400 transition">Vadības panelis</a>
+                <a href="{{ route('forum.index') }}" class="hover:text-orange-400 transition">Forums</a>
+                <a href="{{ route('games.index') }}" class="hover:text-orange-400 transition">Spēles</a>
                 <a href="{{ route('games.create') }}"
-                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold">
+                   class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-semibold transition">
                     + Jauna spēle
                 </a>
-
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button class="hover:text-red-400">Logout</button>
+                    <button class="hover:text-red-400 transition">Iziet</button>
                 </form>
             @endauth
-
             @guest
-                <a href="{{ route('login') }}" class="hover:text-orange-400">Login</a>
-                <a href="{{ route('register') }}" class="hover:text-orange-400">Register</a>
+                <a href="{{ route('login') }}" class="hover:text-orange-400 transition">Ieiet</a>
+                <a href="{{ route('register') }}" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-semibold transition">Reģistrēties</a>
             @endguest
+        </nav>
 
-            <!-- DARK MODE -->
-            <label class="hidden md:flex items-center gap-2 text-sm">
-                <span>Dark Mode</span>
-                <input type="checkbox" id="darkToggle">
-            </label>
-
-        </div>
+        {{-- Mobile: hamburger --}}
+        <button id="nav-toggle"
+                class="md:hidden flex flex-col justify-center items-center w-10 h-10 gap-1.5 rounded-lg hover:bg-white/10 transition"
+                aria-label="Navigācija">
+            <span class="hamburger-bar block w-6 h-0.5 bg-white transition-all origin-center"></span>
+            <span class="hamburger-bar block w-6 h-0.5 bg-white transition-all"></span>
+            <span class="hamburger-bar block w-6 h-0.5 bg-white transition-all origin-center"></span>
+        </button>
     </div>
+
+    {{-- Mobile nav drawer --}}
+    <nav id="mobile-nav"
+         class="md:hidden hidden flex-col bg-gray-800 border-t border-white/10 px-4 py-3 space-y-1 text-sm">
+        <a href="{{ route('home') }}"
+           class="block px-4 py-3 rounded-xl hover:bg-white/10 transition">Sākums</a>
+        @auth
+            <a href="{{ route('dashboard') }}"
+               class="block px-4 py-3 rounded-xl hover:bg-white/10 transition">Vadības panelis</a>
+            <a href="{{ route('forum.index') }}"
+               class="block px-4 py-3 rounded-xl hover:bg-white/10 transition">Forums</a>
+            <a href="{{ route('games.index') }}"
+               class="block px-4 py-3 rounded-xl hover:bg-white/10 transition">Spēles</a>
+            <a href="{{ route('games.create') }}"
+               class="block px-4 py-3 rounded-xl bg-orange-600 hover:bg-orange-700 font-bold text-center transition mt-2">
+                + Jauna spēle
+            </a>
+            <form method="POST" action="{{ route('logout') }}" class="pt-1">
+                @csrf
+                <button class="w-full text-left px-4 py-3 rounded-xl hover:bg-red-500/20 text-red-400 transition">
+                    Iziet
+                </button>
+            </form>
+        @endauth
+        @guest
+            <a href="{{ route('login') }}"
+               class="block px-4 py-3 rounded-xl hover:bg-white/10 transition">Ieiet</a>
+            <a href="{{ route('register') }}"
+               class="block px-4 py-3 rounded-xl bg-orange-600 hover:bg-orange-700 font-bold text-center transition mt-2">
+                Reģistrēties
+            </a>
+        @endguest
+    </nav>
 </header>
 
-<!-- MAIN -->
-<main class="flex-grow p-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-
-    {{-- SUCCESS --}}
+<main class="flex-grow bg-white text-gray-900">
     @if(session('success'))
-        <div class="mb-4 rounded bg-green-100 border border-green-300 text-green-800 px-4 py-3">
-            {{ session('success') }}
+        <div class="max-w-7xl mx-auto px-4 pt-4">
+            <div class="rounded-xl bg-green-50 border border-green-200 text-green-800 px-4 py-3 text-sm">
+                {{ session('success') }}
+            </div>
         </div>
     @endif
-
-    {{-- ERRORS --}}
     @if($errors->any())
-        <div class="mb-4 rounded bg-red-100 border border-red-300 text-red-800 px-4 py-3">
-            <ul class="list-disc pl-5">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+        <div class="max-w-7xl mx-auto px-4 pt-4">
+            <div class="rounded-xl bg-red-50 border border-red-200 text-red-800 px-4 py-3 text-sm">
+                <ul class="list-disc pl-4 space-y-0.5">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
         </div>
     @endif
-
-    {{-- CONTENT --}}
     @yield('content')
-
 </main>
 
-<!-- FOOTER -->
-<footer class="w-full bg-gray-900 text-white p-4 text-center text-sm">
-    &copy; 2024, Roberts Mačs
+<footer class="w-full bg-gray-900 text-white py-4 text-center text-sm">
+    &copy; 2026, Roberts Mačs
 </footer>
 
+<script>
+    const toggle = document.getElementById('nav-toggle');
+    const mobileNav = document.getElementById('mobile-nav');
+    const bars = document.querySelectorAll('.hamburger-bar');
+
+    toggle?.addEventListener('click', function () {
+        const isOpen = !mobileNav.classList.contains('hidden');
+        mobileNav.classList.toggle('hidden');
+        mobileNav.style.display = isOpen ? 'none' : 'flex';
+        // Animate bars
+        if (!isOpen) {
+            bars[0].style.transform = 'translateY(8px) rotate(45deg)';
+            bars[1].style.opacity = '0';
+            bars[2].style.transform = 'translateY(-8px) rotate(-45deg)';
+        } else {
+            bars[0].style.transform = '';
+            bars[1].style.opacity = '';
+            bars[2].style.transform = '';
+        }
+    });
+</script>
+
 </body>
-
-<style>
-    [data-theme='dark'] {
-        background-color: #121212;
-        color: #e0e0e0;
-    }
-
-    [data-theme='dark'] header,
-    [data-theme='dark'] footer {
-        background-color: #1a1a1a;
-    }
-
-    [data-theme='dark'] a {
-        color: #ff9800;
-    }
-</style>
-
 </html>
