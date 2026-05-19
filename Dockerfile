@@ -1,10 +1,10 @@
-FROM php:8.3-cli
+FROM php:8.4-cli
 
 RUN apt-get update && apt-get install -y \
     git curl zip unzip sqlite3 libsqlite3-dev \
     libpng-dev libonig-dev libxml2-dev libzip-dev \
-    nodejs npm \
-    && docker-php-ext-install pdo pdo_sqlite mbstring bcmath zip gd \
+    libicu-dev nodejs npm \
+    && docker-php-ext-install pdo pdo_sqlite mbstring bcmath zip gd intl \
     && apt-get clean
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -12,7 +12,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 COPY . .
 
-RUN composer install --no-dev --optimize-autoloader
+RUN COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --optimize-autoloader
 RUN npm ci && npm run build
 
 RUN mkdir -p database && touch database/database.sqlite \
@@ -22,4 +22,4 @@ RUN mkdir -p database && touch database/database.sqlite \
 
 EXPOSE 80
 
-CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=80
+CMD ["sh", "-c", "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=80"]
