@@ -8,8 +8,12 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('game_events', function (Blueprint $table) {
-            $table->decimal('court_x', 8, 2)->nullable()->after('is_made');
-            $table->decimal('court_y', 8, 2)->nullable()->after('court_x');
+            if (!Schema::hasColumn('game_events', 'court_x')) {
+                $table->decimal('court_x', 8, 2)->nullable()->after('is_made');
+            }
+            if (!Schema::hasColumn('game_events', 'court_y')) {
+                $table->decimal('court_y', 8, 2)->nullable()->after('court_x');
+            }
         });
     }
 
