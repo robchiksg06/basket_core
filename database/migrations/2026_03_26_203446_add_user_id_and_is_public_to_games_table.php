@@ -8,8 +8,12 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('games', function (Blueprint $table) {
-            $table->foreignId('user_id')->nullable()->after('id')->constrained()->nullOnDelete();
-            $table->boolean('is_public')->default(false)->after('status');
+            if (!Schema::hasColumn('games', 'user_id')) {
+                $table->foreignId('user_id')->nullable()->after('id')->constrained()->nullOnDelete();
+            }
+            if (!Schema::hasColumn('games', 'is_public')) {
+                $table->boolean('is_public')->default(false)->after('status');
+            }
         });
     }
 
