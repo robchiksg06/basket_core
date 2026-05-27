@@ -42,6 +42,7 @@ class GamePlayer extends Model
         $assists = $events->where('event_type', 'assist')->count();
         $steals = $events->where('event_type', 'steal')->count();
         $turnovers = $events->where('event_type', 'turnover')->count();
+        $fouls = $events->where('event_type', 'foul')->count();
 
         return [
             'points' => ($ftMade * 1) + ($twoMade * 2) + ($threeMade * 3),
@@ -62,6 +63,7 @@ class GamePlayer extends Model
             'assists' => $assists,
             'steals' => $steals,
             'turnovers' => $turnovers,
+            'fouls' => $fouls,
         ];
     }
 }

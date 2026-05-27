@@ -15,7 +15,13 @@ class Game extends Model
         'status',
         'user_id',
         'is_public',
+        'tournament_match_id',
     ];
+
+    public function tournamentMatch()
+    {
+        return $this->belongsTo(TournamentMatch::class);
+    }
 
     public function players()
     {

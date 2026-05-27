@@ -8,6 +8,7 @@ use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -18,6 +19,7 @@ class User extends Authenticatable implements FilamentUser
         'email',
         'password',
         'role',
+        'avatar',
     ];
 
     protected $hidden = [
@@ -34,7 +36,12 @@ class User extends Authenticatable implements FilamentUser
     }
     public function isAdmin(): bool
     {
-    return $this->role === 'admin';
+        return $this->role === 'admin';
+    }
+
+    public function avatarUrl(): ?string
+    {
+        return $this->avatar ? Storage::url($this->avatar) : null;
     }
 
     public function likes()
@@ -45,6 +52,16 @@ class User extends Authenticatable implements FilamentUser
     public function likedPlayers()
     {
         return $this->belongsToMany(Player::class, 'likes');
+    }
+
+    public function following()
+    {
+        return $this->belongsToMany(User::class, 'user_follows', 'follower_id', 'following_id')->withTimestamps();
+    }
+
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'user_follows', 'following_id', 'follower_id')->withTimestamps();
     }
 
     public function canAccessPanel(Panel $panel): bool

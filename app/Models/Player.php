@@ -15,6 +15,11 @@ class Player extends Model
         'team_id',
     ];
 
+    public function seasons()
+    {
+        return $this->hasMany(PlayerSeason::class)->orderByDesc('season');
+    }
+
     public function likedByUsers()
     {
         return $this->belongsToMany(User::class, 'likes');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Game;
 use App\Models\GameEvent;
 use App\Models\GamePlayer;
+use App\Models\TournamentMatch;
 use Illuminate\Http\Request;
 
 class GameProtocolController extends Controller
@@ -12,6 +13,7 @@ class GameProtocolController extends Controller
     public function index()
     {
         $games = Game::query()
+            ->whereNull('tournament_match_id')
             ->when(auth()->check(), function ($query) {
                 $query->where(function ($q) {
                     $q->where('is_public', true)
@@ -28,7 +30,11 @@ class GameProtocolController extends Controller
 
     public function create()
     {
-        return view('games.create');
+        $tournamentMatch = null;
+        if (request('tournament_match_id')) {
+            $tournamentMatch = TournamentMatch::with(['team1', 'team2', 'tournament'])->find(request('tournament_match_id'));
+        }
+        return view('games.create', compact('tournamentMatch'));
     }
 
     public function store(Request $request)
@@ -42,6 +48,7 @@ class GameProtocolController extends Controller
             'home_players' => ['required', 'array', 'min:1'],
             'away_players' => ['required', 'array', 'min:1'],
             'is_public' => ['nullable', 'boolean'],
+            'tournament_match_id' => ['nullable', 'integer', 'exists:tournament_matches,id'],
         ]);
 
         $game = Game::create([
@@ -55,6 +62,7 @@ class GameProtocolController extends Controller
             'is_public' => $request->boolean('is_public'),
             'court_x' => $validated['court_x'] ?? null,
             'court_y' => $validated['court_y'] ?? null,
+            'tournament_match_id' => $validated['tournament_match_id'] ?? null,
         ]);
 
         foreach ($request->home_players as $player) {
@@ -90,6 +98,7 @@ class GameProtocolController extends Controller
         $game->load([
             'players.events',
             'events.player',
+            'user',
         ]);
 
         $homePlayers = $game->players->where('team_side', 'home')->values();
@@ -97,7 +106,11 @@ class GameProtocolController extends Controller
 
         $quarterScores = $this->buildQuarterScores($game);
 
-        return view('games.show', compact('game', 'homePlayers', 'awayPlayers', 'quarterScores'));
+        $isFollowing = auth()->check() && auth()->id() !== $game->user_id
+            ? auth()->user()->following()->where('following_id', $game->user_id)->exists()
+            : false;
+
+        return view('games.show', compact('game', 'homePlayers', 'awayPlayers', 'quarterScores', 'isFollowing'));
     }
 
     public function addEvent(Request $request, Game $game)
@@ -112,7 +125,7 @@ class GameProtocolController extends Controller
         $baseRules = [
             'game_player_id' => ['required', 'exists:game_players,id'],
             'quarter' => ['required', 'integer', 'min:1', 'max:4'],
-            'event_type' => ['required', 'in:shot,rebound,assist,steal,turnover'],
+            'event_type' => ['required', 'in:shot,rebound,assist,steal,turnover,foul'],
             'event_subtype' => ['nullable', 'in:offensive,defensive'],
             'shot_type' => ['nullable', 'in:ft,2pt,3pt'],
             'is_made' => ['nullable', 'in:0,1'],
@@ -176,9 +189,32 @@ class GameProtocolController extends Controller
     {
         $this->checkGameOwnerOrAdmin($game);
 
-        $game->update([
-            'status' => 'finished',
-        ]);
+        $game->load('events');
+        $game->update(['status' => 'finished']);
+
+        if ($game->tournament_match_id) {
+            $match = TournamentMatch::find($game->tournament_match_id);
+            if ($match && !$match->winner_id && $match->team1_id && $match->team2_id) {
+                $homeScore = $game->home_score;
+                $awayScore = $game->away_score;
+                $winnerId = $homeScore >= $awayScore ? $match->team1_id : $match->team2_id;
+
+                $match->update([
+                    'team1_score' => $homeScore,
+                    'team2_score' => $awayScore,
+                    'winner_id'   => $winnerId,
+                ]);
+
+                $match->tournament->advanceWinner($match);
+
+                if ($match->tournament->matches()->whereNull('winner_id')->count() === 0) {
+                    $match->tournament->update(['status' => 'completed']);
+                }
+
+                return redirect()->route('tournaments.show', $match->tournament_id)
+                    ->with('success', 'Spēle pabeigta! Rezultāts ierakstīts turnīrā.');
+            }
+        }
 
         return redirect()->route('games.show', $game)
             ->with('success', 'Spēle pabeigta.');
@@ -229,6 +265,13 @@ class GameProtocolController extends Controller
     {
         if ($game->is_public) {
             return;
+        }
+
+        if ($game->tournament_match_id) {
+            $match = \App\Models\TournamentMatch::find($game->tournament_match_id);
+            if ($match && $match->tournament?->is_public) {
+                return;
+            }
         }
 
         if (!auth()->check()) {

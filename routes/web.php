@@ -7,7 +7,9 @@ use App\Http\Controllers\GameProtocolController;
 use App\Http\Controllers\LeagueController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\PlayerController;
+use App\Http\Controllers\PlayerStatsImportController;
 use App\Http\Controllers\TeamController;
+use App\Http\Controllers\TournamentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,9 +27,20 @@ Route::post('/register', [AuthController::class, 'register']);
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-Route::get('/dashboard', fn() => view('dashboard'))
+Route::post('/users/{user}/follow', [App\Http\Controllers\FollowController::class, 'toggle'])
+    ->middleware('auth')
+    ->name('users.follow');
+
+Route::get('/dashboard', App\Http\Controllers\DashboardController::class)
     ->middleware('auth')
     ->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/account', [App\Http\Controllers\AccountController::class, 'show'])->name('account.settings');
+    Route::patch('/account/profile', [App\Http\Controllers\AccountController::class, 'updateProfile'])->name('account.profile');
+    Route::patch('/account/password', [App\Http\Controllers\AccountController::class, 'updatePassword'])->name('account.password');
+    Route::post('/account/avatar', [App\Http\Controllers\AccountController::class, 'updateAvatar'])->name('account.avatar');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -65,12 +78,16 @@ Route::get('/players', [PlayerController::class, 'index'])
 
 // Tikai adminiem: create/edit/update/delete
 Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/players/import-stats', [PlayerStatsImportController::class, 'show'])->name('players.import-stats');
+    Route::post('/players/import-stats', [PlayerStatsImportController::class, 'import'])->name('players.import-stats.store');
     Route::resource('players', PlayerController::class)->except(['index']);
 });
 
 Route::get('/public/players', [PlayerController::class, 'publicView'])->name('players.public');
+Route::get('/public/players/compare', [PlayerController::class, 'compare'])->name('players.compare');
 
 Route::get('/public/players/{player}', function (\App\Models\Player $player) {
+    $player->load('seasons');
     return view('players.show', compact('player'));
 })->name('players.public.show');
 
@@ -99,6 +116,7 @@ Route::middleware('auth')->group(function () {
 */
 
 Route::middleware('auth')->group(function () {
+    Route::get('/leaderboard', App\Http\Controllers\LeaderboardController::class)->name('leaderboard');
     Route::get('/games', [GameProtocolController::class, 'index'])->name('games.index');
     Route::get('/games/create', [GameProtocolController::class, 'create'])->name('games.create');
     Route::post('/games', [GameProtocolController::class, 'store'])->name('games.store');
@@ -109,4 +127,24 @@ Route::middleware('auth')->group(function () {
     Route::get('/games/{game}/print', [GameProtocolController::class, 'print'])->name('games.print');
     Route::delete('/games/{game}', [GameProtocolController::class, 'destroy'])->name('games.destroy');
     Route::patch('/games/{game}/visibility', [GameProtocolController::class, 'toggleVisibility'])->name('games.visibility');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Tournaments
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth')->group(function () {
+    Route::get('/tournaments', [TournamentController::class, 'index'])->name('tournaments.index');
+    Route::get('/tournaments/create', [TournamentController::class, 'create'])->name('tournaments.create');
+    Route::post('/tournaments', [TournamentController::class, 'store'])->name('tournaments.store');
+    Route::get('/tournaments/{tournament}', [TournamentController::class, 'show'])->name('tournaments.show');
+    Route::post('/tournaments/{tournament}/matches/{match}/result', [TournamentController::class, 'result'])->name('tournaments.result');
+    Route::post('/tournaments/{tournament}/group-matches/{match}/result', [TournamentController::class, 'groupResult'])->name('tournaments.group-result');
+    Route::post('/tournaments/{tournament}/generate-knockout', [TournamentController::class, 'generateKnockout'])->name('tournaments.generate-knockout');
+    Route::patch('/tournaments/{tournament}/visibility', [TournamentController::class, 'toggleVisibility'])->name('tournaments.visibility');
+    Route::delete('/tournaments/{tournament}', [TournamentController::class, 'destroy'])->name('tournaments.destroy');
+    Route::post('/tournaments/{tournament}/vote', [App\Http\Controllers\TournamentVoteController::class, 'vote'])->name('tournaments.vote');
+    Route::post('/tournaments/{tournament}/match-vote', [App\Http\Controllers\TournamentMatchVoteController::class, 'vote'])->name('tournaments.match-vote');
 });

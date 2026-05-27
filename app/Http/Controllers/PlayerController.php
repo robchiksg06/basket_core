@@ -91,6 +91,16 @@ class PlayerController extends Controller
         return redirect()->route('players.index')->with('success', 'Spēlētājs dzēsts!');
     }
 
+    public function compare(Request $request)
+    {
+        $players = Player::orderBy('name')->get(['id', 'name', 'position', 'team', 'image', 'height']);
+
+        $player1 = $request->filled('player1') ? Player::with('seasons')->find($request->player1) : null;
+        $player2 = $request->filled('player2') ? Player::with('seasons')->find($request->player2) : null;
+
+        return view('players.compare', compact('players', 'player1', 'player2'));
+    }
+
     public function publicView(Request $request)
     {
         if (Auth::check() && Auth::user()->role === 'admin') {

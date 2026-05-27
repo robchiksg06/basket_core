@@ -136,6 +136,27 @@
                     </button>
                 </form>
             @endif
+
+            {{-- Follow game owner --}}
+            @auth
+                @if(auth()->id() !== $game->user_id && $game->user)
+                    <form action="{{ route('users.follow', $game->user) }}" method="POST" class="ml-auto">
+                        @csrf
+                        <button class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition
+                            {{ $isFollowing
+                                ? 'bg-white/20 text-white hover:bg-red-500/40'
+                                : 'bg-orange-500 hover:bg-orange-400 text-white' }}">
+                            @if($isFollowing)
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+                                Sekoji {{ $game->user->name }}
+                            @else
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                Sekot {{ $game->user->name }}
+                            @endif
+                        </button>
+                    </form>
+                @endif
+            @endauth
         </div>
     </div>
 </div>
@@ -205,6 +226,7 @@
                             <option value="assist">Piespēle</option>
                             <option value="steal">Pārķerta bumba</option>
                             <option value="turnover">Kļūda</option>
+                            <option value="foul">Personīgais fauls</option>
                         </select>
                     </div>
 
@@ -457,6 +479,7 @@
                                 'assist'   => 'Piespēle',
                                 'steal'    => 'Pārķerta bumba',
                                 'turnover' => 'Kļūda',
+                                'foul'     => 'Fauls',
                                 default    => ucfirst($eventType),
                             };
 
@@ -466,6 +489,7 @@
                                 'assist'   => 'bg-green-100 text-green-700',
                                 'steal'    => 'bg-purple-100 text-purple-700',
                                 'turnover' => 'bg-red-100 text-red-700',
+                                'foul'     => 'bg-yellow-100 text-yellow-700',
                                 default    => 'bg-gray-100 text-gray-700',
                             };
 
@@ -479,6 +503,7 @@
                                 'assist'   => 'Piespēle',
                                 'steal'    => 'Pārķerta bumba',
                                 'turnover' => 'Kļūda',
+                                'foul'     => 'Personīgais fauls',
                                 default    => '—',
                             };
 

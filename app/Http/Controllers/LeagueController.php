@@ -17,11 +17,11 @@ class LeagueController extends Controller
 
     public function show(League $league)
     {
-        $league->load('teams');
+        $league->load(['teams.players']);
 
         return view('leagues.show', [
             'league' => $league,
-            'teams' => $league->teams,
+            'teams'  => $league->teams,
         ]);
     }
 }

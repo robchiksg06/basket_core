@@ -4,9 +4,14 @@
 
         @auth
             @if(Auth::user()->role === 'admin')
-                <a href="{{ route('players.create') }}" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 mb-4 inline-block">
-                    ➕ Pievienot spēlētāju
-                </a>
+                <div class="flex items-center gap-3 mb-4">
+                    <a href="{{ route('players.create') }}" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 inline-block">
+                        ➕ Pievienot spēlētāju
+                    </a>
+                    <a href="{{ route('players.import-stats') }}" class="bg-slate-700 text-white px-4 py-2 rounded hover:bg-slate-800 inline-block">
+                        📊 Importēt statistiku (CSV)
+                    </a>
+                </div>
             @endif
         @endauth
 

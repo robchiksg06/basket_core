@@ -11,9 +11,13 @@
         <div class="bg-gradient-to-r from-slate-800 to-slate-900 px-8 py-6">
             <h1 class="text-2xl font-extrabold text-white leading-snug">{{ $thread->title }}</h1>
             <div class="flex items-center gap-3 mt-3 text-white/50 text-xs">
-                <span class="w-7 h-7 rounded-lg bg-white/10 text-white flex items-center justify-center text-xs font-bold">
-                    {{ strtoupper(mb_substr($thread->user->name, 0, 2)) }}
-                </span>
+                @if($thread->user->avatarUrl())
+                    <img src="{{ $thread->user->avatarUrl() }}" class="w-7 h-7 rounded-lg object-cover flex-shrink-0" alt="">
+                @else
+                    <span class="w-7 h-7 rounded-lg bg-white/10 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                        {{ strtoupper(mb_substr($thread->user->name, 0, 2)) }}
+                    </span>
+                @endif
                 <span>{{ $thread->user->name }}</span>
                 <span>·</span>
                 <span>{{ $thread->created_at->diffForHumans() }}</span>
@@ -44,9 +48,13 @@
             <div class="divide-y divide-gray-100">
                 @foreach($thread->posts as $post)
                     <div class="px-8 py-5 flex gap-4">
-                        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 text-white flex items-center justify-center text-xs font-black flex-shrink-0">
-                            {{ strtoupper(mb_substr($post->user->name, 0, 2)) }}
-                        </div>
+                        @if($post->user->avatarUrl())
+                            <img src="{{ $post->user->avatarUrl() }}" class="w-9 h-9 rounded-xl object-cover flex-shrink-0" alt="">
+                        @else
+                            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 text-white flex items-center justify-center text-xs font-black flex-shrink-0">
+                                {{ strtoupper(mb_substr($post->user->name, 0, 2)) }}
+                            </div>
+                        @endif
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2 mb-1">
                                 <span class="text-sm font-semibold text-slate-800">{{ $post->user->name }}</span>
@@ -69,9 +77,13 @@
             <form method="POST" action="{{ route('forum.reply', $thread->id) }}" class="p-6 space-y-4">
                 @csrf
                 <div class="flex gap-4">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 text-white flex items-center justify-center text-xs font-black flex-shrink-0">
-                        {{ strtoupper(mb_substr(auth()->user()->name, 0, 2)) }}
-                    </div>
+                    @if(auth()->user()->avatarUrl())
+                        <img src="{{ auth()->user()->avatarUrl() }}" class="w-9 h-9 rounded-xl object-cover flex-shrink-0" alt="">
+                    @else
+                        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 text-white flex items-center justify-center text-xs font-black flex-shrink-0">
+                            {{ strtoupper(mb_substr(auth()->user()->name, 0, 2)) }}
+                        </div>
+                    @endif
                     <textarea name="body"
                               rows="3"
                               class="flex-1 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-800 text-sm resize-none"

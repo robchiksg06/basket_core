@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Players;
 use App\Filament\Resources\Players\Pages\CreatePlayer;
 use App\Filament\Resources\Players\Pages\EditPlayer;
 use App\Filament\Resources\Players\Pages\ListPlayers;
+use App\Filament\Resources\Players\RelationManagers\SeasonsRelationManager;
 use App\Filament\Resources\Players\Schemas\PlayerForm;
 use App\Filament\Resources\Players\Tables\PlayersTable;
 use App\Models\Player;
@@ -41,7 +42,9 @@ class PlayerResource extends Resource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            SeasonsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

@@ -15,34 +15,57 @@ class PlayersTable
     {
         return $table
             ->columns([
+                ImageColumn::make('image')
+                    ->label('Bilde')
+                    ->circular()
+                    ->defaultImageUrl(url('/images/default-player.png')),
+
                 TextColumn::make('name')
-                    ->searchable(),
+                    ->label('Spēlētājs')
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('position')
-                    ->searchable(),
+                    ->label('Pozīcija')
+                    ->searchable()
+                    ->sortable()
+                    ->badge(),
+
                 TextColumn::make('height')
+                    ->label('Augums')
+                    ->suffix(' cm')
                     ->numeric()
                     ->sortable(),
+
                 TextColumn::make('team')
-                    ->searchable(),
+                    ->label('Komanda')
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Izveidots')
+                    ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Atjaunināts')
+                    ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                ImageColumn::make('image'),
             ])
+            ->defaultSort('name')
             ->filters([
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->label('Rediģēt'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->label('Dzēst atlasītos'),
                 ]),
             ]);
     }

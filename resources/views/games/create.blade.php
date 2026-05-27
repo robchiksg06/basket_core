@@ -11,6 +11,12 @@
 
     <form action="{{ route('games.store') }}" method="POST" class="space-y-8">
         @csrf
+        @if($tournamentMatch)
+            <input type="hidden" name="tournament_match_id" value="{{ $tournamentMatch->id }}">
+            <div class="bg-orange-50 border border-orange-200 rounded-2xl px-6 py-4 text-sm text-orange-800">
+                🏆 Turnīra spēle: <strong>{{ $tournamentMatch->tournament->name }}</strong>
+            </div>
+        @endif
 
         <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="bg-gradient-to-r from-orange-500 to-orange-600 px-8 py-5">
@@ -45,7 +51,7 @@
                     <input type="text" name="home_team_name" required
                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
                            placeholder="Komandas nosaukums"
-                           value="{{ old('home_team_name') }}">
+                           value="{{ old('home_team_name', $tournamentMatch?->team1?->name) }}">
                 </div>
 
                 <div>
@@ -53,7 +59,7 @@
                     <input type="text" name="away_team_name" required
                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
                            placeholder="Komandas nosaukums"
-                           value="{{ old('away_team_name') }}">
+                           value="{{ old('away_team_name', $tournamentMatch?->team2?->name) }}">
                 </div>
 
                 <div class="md:col-span-2 pt-2 border-t border-gray-100">

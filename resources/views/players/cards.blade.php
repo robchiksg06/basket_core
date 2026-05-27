@@ -31,6 +31,10 @@
             <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight">Spēlētāji</h1>
             <p class="text-gray-400 mt-1 text-sm">{{ $players->count() }} spēlētāj{{ $players->count() === 1 ? 's' : 'i' }} atrast{{ $players->count() === 1 ? 's' : 'i' }}</p>
         </div>
+        <a href="{{ route('players.compare') }}"
+           class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition flex-shrink-0">
+            ⚖️ Salīdzināt spēlētājus
+        </a>
     </div>
 
     {{-- Search --}}
@@ -118,7 +122,7 @@
 
                     {{-- Actions --}}
                     <div class="mt-auto pt-4 space-y-2">
-                        <a href="{{ route('players.show', $player->id) }}"
+                        <a href="{{ route('players.public.show', $player) }}"
                            class="block w-full bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold py-2.5 rounded-xl transition">
                             Skatīt profilu
                         </a>

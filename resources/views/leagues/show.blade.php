@@ -37,35 +37,50 @@
         </div>
 
         @if ($teams->isEmpty())
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center text-gray-500">
-                Šajā līgā vēl nav pievienota neviena komanda.
+            <div class="bg-white rounded-2xl border border-dashed border-gray-300 p-12 text-center text-gray-400">
+                <div class="text-4xl mb-3">🏀</div>
+                <p class="font-medium">Šajā līgā vēl nav pievienota neviena komanda.</p>
             </div>
         @else
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 @foreach($teams as $team)
-                    <div class="bg-white rounded-2xl shadow-sm hover:shadow-lg transition duration-300 border border-gray-200 p-6">
-                        <div class="flex flex-col items-center text-center">
-                            @if($team->logo)
-                                <img
-                                    src="{{ asset('storage/' . $team->logo) }}"
-                                    alt="{{ $team->name }}"
-                                    class="w-24 h-24 object-contain mb-4"
-                                >
-                            @else
-                                <div class="w-24 h-24 mb-4 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
-                                    Nav logo
-                                </div>
-                            @endif
+                    <a href="{{ route('teams.show', $team) }}?from_league={{ $league->id }}"
+                       class="group bg-white rounded-2xl border-2 border-gray-100 shadow-sm hover:border-orange-300 hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col">
 
-                            <h3 class="text-xl font-bold text-gray-900 mb-2">
-                                {{ $team->name }}
-                            </h3>
-
-                            <p class="text-gray-500">
-                                {{ $team->country ?? 'Nav norādīta valsts' }}
-                            </p>
+                        {{-- Header --}}
+                        <div class="bg-gradient-to-br from-slate-800 to-slate-900 px-6 py-5 flex items-center gap-4">
+                            <div class="w-16 h-16 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0">
+                                @if($team->logo)
+                                    <img src="{{ asset('storage/' . $team->logo) }}"
+                                         alt="{{ $team->name }}"
+                                         class="w-12 h-12 object-contain drop-shadow">
+                                @else
+                                    <span class="text-xl font-black text-white">
+                                        {{ strtoupper(mb_substr($team->name, 0, 2)) }}
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="min-w-0">
+                                <h3 class="text-lg font-extrabold text-white leading-tight truncate group-hover:text-orange-300 transition">
+                                    {{ $team->name }}
+                                </h3>
+                                @if($team->country)
+                                    <p class="text-white/50 text-xs mt-0.5">{{ $team->country }}</p>
+                                @endif
+                            </div>
                         </div>
-                    </div>
+
+                        {{-- Footer --}}
+                        <div class="px-6 py-4 flex items-center justify-between">
+                            <div class="flex items-center gap-2 text-sm text-slate-600">
+                                <span class="text-xl font-extrabold text-orange-600">{{ $team->players->count() }}</span>
+                                <span class="text-gray-400">spēlētāj{{ $team->players->count() === 1 ? 's' : 'i' }}</span>
+                            </div>
+                            <span class="text-xs text-orange-500 font-semibold group-hover:underline">
+                                Skatīt sastāvu →
+                            </span>
+                        </div>
+                    </a>
                 @endforeach
             </div>
         @endif

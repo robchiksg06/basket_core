@@ -9,13 +9,23 @@
 
         {{-- Back link --}}
         <div class="relative z-10 px-8 pt-6">
-            <a href="{{ route('teams.index') }}"
-               class="inline-flex items-center gap-1.5 text-white/50 hover:text-white text-sm font-medium transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                </svg>
-                Atpakaļ uz komandām
-            </a>
+            @if(request('from_league'))
+                <a href="{{ route('leagues.show', request('from_league')) }}"
+                   class="inline-flex items-center gap-1.5 text-white/50 hover:text-white text-sm font-medium transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                    Atpakaļ uz līgu
+                </a>
+            @else
+                <a href="{{ route('teams.index') }}"
+                   class="inline-flex items-center gap-1.5 text-white/50 hover:text-white text-sm font-medium transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                    Atpakaļ uz komandām
+                </a>
+            @endif
         </div>
 
         {{-- Main content --}}
@@ -83,7 +93,8 @@
         @else
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 @foreach($team->players as $player)
-                    <div class="group relative bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden
+                    <a href="{{ route('players.public.show', $player) }}?from_team={{ $team->id }}{{ request('from_league') ? '&from_league='.request('from_league') : '' }}"
+                       class="group relative bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden
                                 hover:shadow-xl hover:-translate-y-1 hover:border-orange-200
                                 transition-all duration-300 ease-out flex items-stretch">
 
@@ -126,7 +137,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 @endforeach
             </div>
         @endif
