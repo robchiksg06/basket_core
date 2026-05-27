@@ -12,6 +12,8 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 COPY . .
 
+RUN cp -r database/migrations /db_migrations
+
 RUN COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --optimize-autoloader
 
 RUN mkdir -p database && touch database/database.sqlite
@@ -20,4 +22,4 @@ RUN mkdir -p storage/framework/sessions storage/framework/views storage/framewor
 
 EXPOSE 80
 
-CMD ["sh", "-c", "php artisan migrate --force && php artisan db:seed --force && php artisan storage:link --force && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan serve --host=0.0.0.0 --port=80"]
+CMD ["sh", "-c", "cp -rn /db_migrations/. /app/database/migrations/ && php artisan migrate --force && php artisan db:seed --force && php artisan storage:link --force && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan serve --host=0.0.0.0 --port=80"]
