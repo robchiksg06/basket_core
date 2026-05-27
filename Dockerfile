@@ -3,7 +3,7 @@ FROM php:8.4-cli
 RUN apt-get update && apt-get install -y \
     git curl zip unzip sqlite3 libsqlite3-dev \
     libpng-dev libonig-dev libxml2-dev libzip-dev \
-    libicu-dev nodejs npm \
+    libicu-dev \
     && docker-php-ext-install pdo pdo_sqlite mbstring bcmath zip gd intl \
     && apt-get clean
 
@@ -13,7 +13,6 @@ WORKDIR /app
 COPY . .
 
 RUN COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --optimize-autoloader
-RUN npm ci && npm run build
 
 RUN mkdir -p database && touch database/database.sqlite
 RUN mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache storage/logs \
